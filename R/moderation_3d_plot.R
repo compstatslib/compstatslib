@@ -89,7 +89,6 @@
 #' plot_moderation_3d(y ~ x + z + w + x:z, moderation_data,
 #'                    iv = "x", mod = "z")
 #'
-#' @importFrom stats lm predict reformulate
 #' @export
 plot_moderation_3d <- function(formula = y ~ x * z,
                                data    = moderation_data, # nolint: object_usage_linter

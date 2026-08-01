@@ -64,7 +64,6 @@
 #'                opacity = 0.3, size = 10,
 #'                titles = list(x = "IV", y = "Moderator", z = "Outcome"))
 #'
-#' @importFrom plotly plot_ly layout
 #' @export
 plot_scatter3d <- function(data    = moderation_data, # nolint: object_usage_linter
                            x       = NULL,
