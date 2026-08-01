@@ -73,13 +73,13 @@ plot_logit <- function(points, formula = y ~ x, regression = TRUE, stats = TRUE,
     if (stats) {
       regr_summary <- summary(regr)
 
-      par(family = "mono")
+      old_par <- par(family = "mono")
+      on.exit(par(old_par), add = TRUE)
       legend(legend_loc, legend = c(
         paste("Intercept  : ", round(regr$coefficients[1], 2), "\n",
               "Coefficient: ", round(regr$coefficients[2], 2), "\n",
               "AIC        : ", round(regr_summary$aic, 2), sep = "")),
         bty = "n")
-      par(family = "sans")
     }
   }
 }
