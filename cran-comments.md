@@ -40,8 +40,18 @@ examples.
 
 ### Package purpose
 
-This is a teaching package. The functions are built for in-class demonstration
-and self-study of introductory computational statistics — regression, logistic
-regression, t-tests, sampling distributions, confidence intervals, PCA, matrix
-inverses, and moderation. The plotting functions are deliberately opinionated
-about layout because they are meant to be read from the back of a lecture hall.
+The package covers two related things, which is why the exported functions vary
+in how general they are.
+
+`plot_scatter3d()` and `plot_moderation_3d()` (and their interactive
+counterparts) are general-purpose visualization tools: they accept arbitrary
+data frames and model formulas, and expose axis, color, aspect-ratio, and
+camera / rotation control. The remaining functions demonstrate a concept —
+sampling distributions, confidence intervals, t-statistics, matrix inversion —
+by simulating it rather than by plotting user data, and are built for in-class
+demonstration and self-study. Their layout and axis ranges are deliberately
+opinionated because they are meant to be read from the back of a lecture hall.
+
+Every interactive gadget returns, and prints, the `plot_*()` call that
+reproduces its final view, so a session in the viewer pane can be turned into
+reproducible code.

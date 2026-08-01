@@ -1,13 +1,20 @@
 Package: compstatslib
 Type: Package
-Title: Interactive Tools and Plotting Functions to Teach or Learn Basic Concepts in Computational Statistics
+Title: Interactive 2D and 3D Visualization of Data and Statistical Concepts
 Version: 0.8.0
 Date: 2026-08-01
 Authors@R: c(person("Soumya", "Ray", email = "soumya.ray@gmail.com", role = c("aut", "cre")),
              person("Daniele", "Melotti", email = "danielemelotti@hotmail.com", role = c("aut")))
-Description: Collection of interactive, plotting, and computational functions 
-  that help teachers and students learn concepts in computational statistics. 
-  Useful for in-class demonstrations, self-learning, and report generation.
+Description: Interactive gadgets and plotting functions for visualizing data
+  sets and statistical concepts in two and three dimensions. Explore a data
+  frame as a rotatable 3D point cloud, fit a moderated (interaction)
+  regression and view its surface as a 3D wireframe, or plot principal
+  components and regression fits in two dimensions. Each interactive gadget
+  returns the call that reproduces its final view, including the viewing
+  angle, so an exploratory session can be pasted into a script or report.
+  Also provides simulation-based demonstrations of sampling distributions,
+  confidence intervals, t-tests, and matrix inversion for teaching and
+  self-study.
 Imports:
   lattice,
   miniUI,

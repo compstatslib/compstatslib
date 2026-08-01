@@ -315,3 +315,60 @@ dependencies.
   `interactive_scatter3d()` with `data = moderation_data` defaults —
   this entry is the cleanup once the package has more than one
   function casually depending on `moderation_data` as a generic demo.
+
+## Publication-quality output for the 3D visualizations
+
+### Motivation
+
+As of v0.8.0 the README and `DESCRIPTION` position `plot_scatter3d()`
+and `plot_moderation_3d()` as general-purpose data visualization, not
+only teaching aids — they accept arbitrary data frames and formulas
+and expose axis, color, aspect, and camera control. The stated
+direction is figures good enough for textbooks and manuscripts.
+
+They are not there yet, and the README says so. This entry records
+what "there" actually requires, so the claim can be made honestly
+later rather than aspirationally now.
+
+### The concrete gaps
+
+- **No static export path.** `plot_scatter3d()` returns a `plotly`
+  htmlwidget, which renders to interactive HTML. A manuscript needs a
+  vector or high-DPI raster file. `plotly::save_image()` requires
+  `kaleido` (a Python dependency), so this cannot become a hard
+  dependency of a CRAN package — it has to be a documented recipe or
+  a `Suggests`-guarded helper.
+- **No figure-geometry control.** Neither function exposes size, DPI,
+  margins, or font family / size. A journal figure is specified in
+  millimeters and points, not in viewer-pane pixels.
+- **Hardcoded aesthetics.** Colors are baked in (the wireframe's
+  height gradient, `plot_scatter3d()`'s default marker color). No
+  palette argument, no grayscale mode, no colorblind-safe default —
+  and print submissions still routinely need grayscale.
+- **No legend / annotation control** beyond axis titles.
+- **`lattice` vs `plotly` split.** The two 3D functions render through
+  different engines with different export stories. Anyone producing a
+  figure pair for one paper will hit two different sets of controls.
+
+### Open questions
+
+- Is a `Suggests`-guarded `save_figure()` helper worth it, or is a
+  vignette section with the `kaleido` recipe the honest answer?
+- Should the wireframe move to `plotly` for a single export path, or
+  does `lattice` stay because it is a base-graphics-friendly trellis
+  object? Moving it is a breaking return-type change and would need a
+  deprecation cycle post-CRAN.
+- Grayscale / colorblind-safe palettes: new argument, or a global
+  option?
+
+### Out of scope
+
+- Any change to the concept-demonstration functions
+  (`plot_t_test()`, `plot_sampling()`, `plot_sample_ci()`,
+  `plot_matrix_inverse()`). Those are lecture-hall visuals and there
+  is no reason to make them publication-shaped.
+
+### Related
+
+- `README.Rmd` names this direction and links here.
+- `cran-comments.md` describes the two-part split for reviewers.
