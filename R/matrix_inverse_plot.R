@@ -34,7 +34,10 @@ plot_matrix_inverse <- function(x1, y1, x2, y2) {
   A_col <- rgb(1, 0, 0, 0.1)
   Ainv_col <- rgb(0, 0, 1, 0.1)
   
-  plot(NA, xlim=c(-3, 3), ylim=c(-3,3), frame.plot = FALSE)
+  # xlab/ylab are given explicitly: plot(NA, ...) otherwise deparses its
+  # first argument into the axis labels, giving "Index" and "NA".
+  plot(NA, xlim=c(-3, 3), ylim=c(-3,3), frame.plot = FALSE,
+       xlab = "x", ylab = "y")
   plot_matrix_det(A, A_col)
   plot_matrix_det(Ainv, Ainv_col)
 }

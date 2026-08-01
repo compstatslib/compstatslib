@@ -51,6 +51,10 @@ has any users to break, so it carries deliberate breaking changes.
   the same `par()` call that set `mfrow`, and since `mfrow` resets `cex` as a
   side effect, the value it saved was already clobbered.
 
+* `plot_matrix_inverse()` labels its axes `x` and `y`. It built its empty
+  plotting region with `plot(NA, ...)`, which deparses its first argument into
+  the axis labels, so the axes read `Index` and `NA`.
+
 ## Documentation
 
 * Every exported function now documents its return value and carries runnable
