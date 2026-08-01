@@ -121,7 +121,7 @@ error and yields a numeric vector of length `nrow(data)`."
 
 ### Affected functions (candidate list)
 
-`plot_scatter3d()`, `interactive_scatter3d()`, `plot_logit()`, `plot_regr()`,
+`plot_scatter3d()`, `interactive_scatter3d()`, `plot_logit()`, `plot_regression()`,
 `plot_pca()`, `plot_moderation()` (if/when added), and any future
 visualization that takes column references. Functions that already
 take a `formula` argument (e.g. `plot_moderation_3d()`) are out —
@@ -240,7 +240,7 @@ dataset" role it was never designed for.
 
 A real, richer bundled dataset would:
 
-- Make `?plot_scatter3d`, `?plot_logit`, `?plot_pca`, `?plot_regr`, etc. tell
+- Make `?plot_scatter3d`, `?plot_logit`, `?plot_pca`, `?plot_regression`, etc. tell
   a coherent narrative ("here is one dataset, here are several
   questions you can ask of it") rather than each example being a toy.
 - Cover the **type mix** different functions need:

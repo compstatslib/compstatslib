@@ -77,6 +77,8 @@ interactive_moderation_3d <- function(formula = y ~ x * z,
                                       mod     = NULL,
                                       ...) {
   dot_args <- list(...)
+  data_label <- paste(deparse(substitute(data)), collapse = " ")
+  force(data)
 
   ui <- miniUI::miniPage(
     miniUI::gadgetTitleBar("Interactive 3D Moderation",
@@ -120,7 +122,16 @@ interactive_moderation_3d <- function(formula = y ~ x * z,
     })
 
     shiny::observeEvent(input$done, {
-      shiny::stopApp(invisible(data))
+      result <- compstatslib_args(
+        c(list(formula = formula, data = data, iv = iv, mod = mod,
+               z_rot = input$z_rot, x_rot = input$x_rot),
+          dot_args),
+        fn       = "plot_moderation_3d",
+        defaults = list(iv = NULL, mod = NULL, z_rot = 40, x_rot = -70),
+        display  = list(data = .verbatim(data_label))
+      )
+      print(result)
+      shiny::stopApp(invisible(result))
     })
 
     shiny::observeEvent(input$cancel, {

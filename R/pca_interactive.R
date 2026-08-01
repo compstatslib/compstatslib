@@ -59,7 +59,14 @@ interactive_pca <- function(meancenter = TRUE) {
     })
 
     shiny::observeEvent(input$done, {
-      shiny::stopApp(list(points = pts(), pca = pca_result()))
+      result <- compstatslib_points(
+        pts(), fn = "plot_pca",
+        args     = list(meancenter = meancenter),
+        defaults = list(meancenter = TRUE),
+        extra    = list(pca = pca_result())
+      )
+      print(result)
+      shiny::stopApp(invisible(result))
     })
 
     shiny::observeEvent(input$cancel, {

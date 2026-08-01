@@ -8,7 +8,7 @@
 #' estimate the regression. If no \code{points} are provided, the user is free
 #' to click and create points on the plot area.
 #'
-#' @param ... Further arguments passed to the \code{plot_regr()} function that
+#' @param ... Further arguments passed to the \code{plot_regression()} function that
 #' produces the plot.
 #'
 #' @return A \code{dataframe} containing the points coordinates. Additionally,
@@ -26,7 +26,7 @@
 #' Click on the plot area to add points and see a corresponding regression line.
 #' Click "Done" to return the points to the console.
 #'
-#' @seealso \code{\link{plot_regr}}
+#' @seealso \code{\link{plot_regression}}
 #'
 #' @examples
 #' \dontrun{
@@ -80,11 +80,14 @@ interactive_regression <- function(points = data.frame(), ...) {
     })
 
     output$regr_plot <- shiny::renderPlot({
-      do.call(plot_regr, c(list(points = pts()), dot_args))
+      do.call(plot_regression, c(list(points = pts()), dot_args))
     })
 
     shiny::observeEvent(input$done, {
-      shiny::stopApp(pts())
+      result <- compstatslib_points(pts(), fn = "plot_regression",
+                                    args = dot_args)
+      print(result)
+      shiny::stopApp(invisible(result))
     })
 
     shiny::observeEvent(input$cancel, {

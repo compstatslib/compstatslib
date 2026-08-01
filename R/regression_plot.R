@@ -1,4 +1,4 @@
-#' compstatslib plot_regr() function
+#' compstatslib plot_regression() function
 #' 
 #' Non-interactive visualization function that plots given points, regression line and relevant statistics.
 #'
@@ -23,10 +23,10 @@
 #' @examples
 #' points <- data.frame(x = c(1, 3, 5, 8), y = c(2, 4, 6 ,8))
 #' 
-#' plot_regr(points)
+#' plot_regression(points)
 #' 
 #' @export
-plot_regr <- function(points, regression=TRUE, stats=TRUE) {
+plot_regression <- function(points, regression=TRUE, stats=TRUE) {
   max_x <- 50
   if (nrow(points) == 0) {
     plot(NA, xlim=c(-5,max_x), ylim=c(-5,max_x), xlab="x", ylab="y")

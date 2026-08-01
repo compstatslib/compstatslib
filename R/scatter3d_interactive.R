@@ -62,12 +62,12 @@
 #'
 #' The printed Done call uses \code{deparse(substitute(data))} captured
 #' at gadget entry, so it shows the user's variable name (e.g.
-#' \code{plot_scatter3d(my_df, ...)}). Args still at their
+#' \code{plot_scatter3d(data = my_df, ...)}). Args still at their
 #' \code{plot_scatter3d()} defaults are omitted from the printed call.
 #' Caveat: inline expressions are reproduced literally — calling
 #' \code{interactive_scatter3d(read.csv("x.csv"))} prints
-#' \code{plot_scatter3d(read.csv("x.csv"), ...)} which re-runs the read
-#' when pasted; capture the data in a variable first to avoid that.
+#' \code{plot_scatter3d(data = read.csv("x.csv"), ...)} which re-runs the
+#' read when pasted; capture the data in a variable first to avoid that.
 #'
 #' This function only works in IDEs that support Shiny gadgets
 #' (RStudio, Positron, etc.).
@@ -238,51 +238,28 @@ interactive_scatter3d <- function(data    = moderation_data, # nolint: object_us
       color_col  <- if (input$color == "(none)") NULL else input$color
       aspect_vec <- c(input$aspect_x, input$aspect_y, input$aspect_z)
       cam        <- camera_state()
-      args <- list(
-        data    = data,
-        x       = input$x,
-        y       = input$y,
-        z       = input$z,
-        color   = color_col,
-        aspect  = aspect_vec,
-        opacity = input$opacity,
-        size    = input$size,
-        camera  = cam,
-        titles  = titles
+      result <- compstatslib_args(
+        list(
+          data    = data,
+          x       = input$x,
+          y       = input$y,
+          z       = input$z,
+          color   = color_col,
+          aspect  = aspect_vec,
+          opacity = input$opacity,
+          size    = input$size,
+          camera  = cam,
+          titles  = titles
+        ),
+        fn       = "plot_scatter3d",
+        defaults = list(color = NULL, aspect = c(1, 1, 1), opacity = 0.8,
+                        size = 5, camera = NULL, titles = NULL),
+        display  = list(data = .verbatim(paste(deparse(data_sym),
+                                               collapse = " ")))
       )
+      print(result)
 
-      parts <- c(deparse(data_sym),
-                 sprintf('x = "%s"', input$x),
-                 sprintf('y = "%s"', input$y),
-                 sprintf('z = "%s"', input$z))
-      if (!is.null(color_col)) {
-        parts <- c(parts, sprintf('color = "%s"', color_col))
-      }
-      if (!isTRUE(all.equal(aspect_vec, c(1, 1, 1)))) {
-        parts <- c(parts,
-                   sprintf("aspect = c(%s)",
-                           paste(aspect_vec, collapse = ", ")))
-      }
-      if (!isTRUE(all.equal(input$opacity, 0.8))) {
-        parts <- c(parts, sprintf("opacity = %s", input$opacity))
-      }
-      if (!isTRUE(all.equal(input$size, 5))) {
-        parts <- c(parts, sprintf("size = %s", input$size))
-      }
-      if (!is.null(cam)) {
-        parts <- c(parts,
-                   sprintf("camera = %s",
-                           paste(deparse(cam), collapse = " ")))
-      }
-      if (!is.null(titles)) {
-        parts <- c(parts,
-                   sprintf("titles = %s",
-                           paste(deparse(titles), collapse = " ")))
-      }
-      cat(sprintf("plot_scatter3d(%s)\n",
-                  paste(parts, collapse = ", ")))
-
-      shiny::stopApp(invisible(args))
+      shiny::stopApp(invisible(result))
     })
 
     shiny::observeEvent(input$cancel, {

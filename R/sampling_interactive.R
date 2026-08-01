@@ -22,6 +22,11 @@
 #' }
 #' @export
 interactive_sampling <- function(population, sample_size = 10, theta = mean) {
+  # Captured for the printed reproduction call: a 100,000-element population
+  # vector and a function body are both unreadable when deparsed.
+  pop_label   <- paste(deparse(substitute(population)), collapse = " ")
+  theta_label <- paste(deparse(substitute(theta)), collapse = " ")
+
   ui <- miniUI::miniPage(
     miniUI::gadgetTitleBar("Sampling Distribution",
       right = miniUI::miniTitleBarButton("done", "Done", primary = TRUE)
@@ -77,7 +82,19 @@ interactive_sampling <- function(population, sample_size = 10, theta = mean) {
     })
 
     shiny::observeEvent(input$done, {
-      shiny::stopApp(cache())
+      result <- compstatslib_args(
+        list(population  = population,
+             sample_size = as.numeric(input$sample_size),
+             theta       = theta,
+             reps        = as.numeric(input$reps)),
+        fn       = "plot_sampling",
+        defaults = list(reps = 1),
+        display  = list(population = .verbatim(pop_label),
+                        theta      = .verbatim(theta_label)),
+        extra    = list(vars = cache())
+      )
+      print(result)
+      shiny::stopApp(invisible(result))
     })
 
     shiny::observeEvent(input$cancel, {

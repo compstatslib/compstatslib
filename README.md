@@ -57,7 +57,7 @@ Three types of functions are made available:
 - `interactive_regression()` Interactive visualization function that
   lets you point-and-click to add data points, while it automatically
   plots and updates a regression line and associated statistics.
-- `plot_regr()` Plotting function that takes a dataframe of points
+- `plot_regression()` Plotting function that takes a dataframe of points
   (x, y) and plots them with a regression line and associated
   statistics.
 

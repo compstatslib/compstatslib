@@ -4,7 +4,24 @@
 \alias{interactive_t_test}
 \title{compstatslib interactive_t_test() function}
 \usage{
-interactive_t_test()
+interactive_t_test(
+  diff = 0.5,
+  sd = 4,
+  n = 100,
+  alpha = 0.05,
+  error_matrix = FALSE
+)
+}
+\arguments{
+\item{diff}{The initial difference between the null and alternative means.}
+
+\item{sd}{The initial standard deviation of the population.}
+
+\item{n}{The initial sample size.}
+
+\item{alpha}{The initial significance level.}
+
+\item{error_matrix}{Logical; whether to show the error matrix initially.}
 }
 \description{
 Interactive visualization that allows one to adjust the parameters affecting
@@ -16,6 +33,9 @@ Use the sliders in the viewer to adjust parameters. The movement of the
 alternative t-statistics distribution with respect to the null distribution
 will be visible, as well as the consequent change in statistical power.
 Click "Done" to close.
+
+All five arguments match \code{\link{plot_t_test}}'s, so a gadget session can
+be resumed from a previous result.
 }
 \seealso{
 \code{\link{plot_t_test}}

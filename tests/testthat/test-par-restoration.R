@@ -1,7 +1,7 @@
 # CRAN policy: functions must restore the user's par() settings on exit,
 # including when they error part-way through.
 
-test_that("plot_regr() leaves par('family') untouched", {
+test_that("plot_regression() leaves par('family') untouched", {
   pdf(NULL)
   on.exit({ dev.off() }, add = TRUE)
 
@@ -9,7 +9,7 @@ test_that("plot_regr() leaves par('family') untouched", {
   on.exit(par(old), add = TRUE)
 
   points <- data.frame(x = c(1, 3, 5, 8), y = c(2, 4, 6, 8))
-  plot_regr(points, stats = TRUE)
+  plot_regression(points, stats = TRUE)
 
   expect_equal(par("family"), "serif")
 })

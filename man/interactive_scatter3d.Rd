@@ -90,12 +90,12 @@ useful for nailing down a specific angle for an Rmd / report.
 
 The printed Done call uses \code{deparse(substitute(data))} captured
 at gadget entry, so it shows the user's variable name (e.g.
-\code{plot_scatter3d(my_df, ...)}). Args still at their
+\code{plot_scatter3d(data = my_df, ...)}). Args still at their
 \code{plot_scatter3d()} defaults are omitted from the printed call.
 Caveat: inline expressions are reproduced literally — calling
 \code{interactive_scatter3d(read.csv("x.csv"))} prints
-\code{plot_scatter3d(read.csv("x.csv"), ...)} which re-runs the read
-when pasted; capture the data in a variable first to avoid that.
+\code{plot_scatter3d(data = read.csv("x.csv"), ...)} which re-runs the
+read when pasted; capture the data in a variable first to avoid that.
 
 This function only works in IDEs that support Shiny gadgets
 (RStudio, Positron, etc.).

@@ -90,7 +90,14 @@ interactive_logit <- function(points = data.frame(), formula = y ~ x,
     })
 
     shiny::observeEvent(input$done, {
-      shiny::stopApp(pts())
+      result <- compstatslib_points(
+        pts(), fn = "plot_logit",
+        args = c(list(formula = formula, min_x = min_x, max_x = max_x),
+                 dot_args),
+        defaults = list(formula = y ~ x, min_x = 0, max_x = 1)
+      )
+      print(result)
+      shiny::stopApp(invisible(result))
     })
 
     shiny::observeEvent(input$cancel, {

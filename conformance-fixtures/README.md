@@ -26,7 +26,7 @@ a dataset from `data/`, so the working directory must be the package root.
 
 | Script | Covers |
 | --- | --- |
-| `regression.R` | `plot_regr()`: coefficients, sums of squares, degenerate fits |
+| `regression.R` | `plot_regression()`: coefficients, sums of squares, degenerate fits |
 | `tdist.R` | `plot_t_test()`: central and non-central t, power, error matrix |
 | `logit.R` | `plot_logit()`: `glm(binomial)` fits, separation, `glm.fit` internals |
 | `ols.R` | `lm.fit()` / `lm.wfit()`: rank deficiency, pivoting, weights |

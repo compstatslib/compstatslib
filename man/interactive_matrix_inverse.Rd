@@ -4,18 +4,18 @@
 \alias{interactive_matrix_inverse}
 \title{compstatslib interactive_matrix_inverse() function}
 \usage{
-interactive_matrix_inverse(x1_init = 1, y1_init = 2, x2_init = 2, y2_init = 1)
+interactive_matrix_inverse(x1 = 1, y1 = 2, x2 = 2, y2 = 1)
 }
 \arguments{
-\item{x1_init}{The first row (or column) vector of matrix A. This parameter is set to 1 by default.}
+\item{x1}{The first row (or column) vector of matrix A. This parameter is set to 1 by default.}
 
-\item{y1_init}{The second row (or column) vector of matrix A. This parameter is set to 2 by default.
+\item{y1}{The second row (or column) vector of matrix A. This parameter is set to 2 by default.
 
 The area of the parallelogram resulting from these two vectors is the determinant of matrix A.}
 
-\item{x2_init}{The first row (or column) vector of the inverse matrix A^(-1). This parameter is set to 2 by default.}
+\item{x2}{The first row (or column) vector of the inverse matrix A^(-1). This parameter is set to 2 by default.}
 
-\item{y2_init}{The second row (or column) vector of the inverse matrix A^(-1). This parameter is set to 1 by default.
+\item{y2}{The second row (or column) vector of the inverse matrix A^(-1). This parameter is set to 1 by default.
 
 The area of the parallelogram resulting from these two vectors is the determinant of the inverse matrix A^(-1).}
 }

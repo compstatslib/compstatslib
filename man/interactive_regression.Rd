@@ -11,7 +11,7 @@ interactive_regression(points = data.frame(), ...)
 estimate the regression. If no \code{points} are provided, the user is free
 to click and create points on the plot area.}
 
-\item{...}{Further arguments passed to the \code{plot_regr()} function that
+\item{...}{Further arguments passed to the \code{plot_regression()} function that
 produces the plot.}
 }
 \value{
@@ -52,5 +52,5 @@ interactive_regression(points)
 }
 }
 \seealso{
-\code{\link{plot_regr}}
+\code{\link{plot_regression}}
 }

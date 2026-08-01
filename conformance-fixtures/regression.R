@@ -1,7 +1,7 @@
 # Conformance reference values for the simple-regression family.
 #
 # Generates the expected values that language ports of compstatslib assert
-# against for `plot_regr()` / `interactive_regression()`: intercept, slope,
+# against for `plot_regression()` / `interactive_regression()`: intercept, slope,
 # correlation, SSR, SSE, SST, R-squared, and fitted values, plus the
 # degenerate n = 1, constant-x and constant-y cases.
 #
