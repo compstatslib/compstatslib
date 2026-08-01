@@ -34,8 +34,6 @@ A \code{list} containing the population data, sample statistics, and other infor
 Plot distribution of a population, samples drawn from the population, given sampling statistic.
 }
 \examples{
-\dontrun{
 plot_sampling(rnorm(100000), sample_size = 100, reps = 50, theta = median)
-}
 
 }

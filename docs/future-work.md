@@ -121,7 +121,7 @@ error and yields a numeric vector of length `nrow(data)`."
 
 ### Affected functions (candidate list)
 
-`plot_scatter3d()`, `interactive_scatter3d()`, `plot_logit()`, `plot_regr()`,
+`plot_scatter3d()`, `interactive_scatter3d()`, `plot_logit()`, `plot_regression()`,
 `plot_pca()`, `plot_moderation()` (if/when added), and any future
 visualization that takes column references. Functions that already
 take a `formula` argument (e.g. `plot_moderation_3d()`) are out —
@@ -240,7 +240,7 @@ dataset" role it was never designed for.
 
 A real, richer bundled dataset would:
 
-- Make `?plot_scatter3d`, `?plot_logit`, `?plot_pca`, `?plot_regr`, etc. tell
+- Make `?plot_scatter3d`, `?plot_logit`, `?plot_pca`, `?plot_regression`, etc. tell
   a coherent narrative ("here is one dataset, here are several
   questions you can ask of it") rather than each example being a toy.
 - Cover the **type mix** different functions need:
@@ -284,11 +284,13 @@ dependencies.
    datasets — one continuous-heavy, one mixed-with-categorical — may
    be cleaner. Cost: more `?dataname` entries to maintain and more
    choice for users to make.
-2. **Replace or add?** Keep `moderation_data` (existing examples and
-   tests reference it; the function-name pair `plot_moderation_3d` /
-   `moderation_data` is mnemonic) and add the new dataset alongside,
-   versus retire `moderation_data` and migrate everything. Leaning
-   "add" — `moderation_data` earns its keep as a
+2. **Replace or add?** ~~Open.~~ **Settled: add.** As of the v0.8.0 CRAN
+   release this is no longer a free choice. Four exported functions carry
+   `data = moderation_data` as a default, so an argument-less call is now
+   part of the released compatibility surface: repointing
+   `moderation_data` at different data would silently change the output
+   of code that already works. Any new dataset must be **added**
+   alongside it. `moderation_data` also still earns its keep as a
    *clean / no-confounders* demo for moderation specifically.
 3. **License and provenance.** Real datasets need a documented
    source and license. Bundle the cleaning code under
@@ -313,3 +315,60 @@ dependencies.
   `interactive_scatter3d()` with `data = moderation_data` defaults —
   this entry is the cleanup once the package has more than one
   function casually depending on `moderation_data` as a generic demo.
+
+## Publication-quality output for the 3D visualizations
+
+### Motivation
+
+As of v0.8.0 the README and `DESCRIPTION` position `plot_scatter3d()`
+and `plot_moderation_3d()` as general-purpose data visualization, not
+only teaching aids — they accept arbitrary data frames and formulas
+and expose axis, color, aspect, and camera control. The stated
+direction is figures good enough for textbooks and manuscripts.
+
+They are not there yet, and the README says so. This entry records
+what "there" actually requires, so the claim can be made honestly
+later rather than aspirationally now.
+
+### The concrete gaps
+
+- **No static export path.** `plot_scatter3d()` returns a `plotly`
+  htmlwidget, which renders to interactive HTML. A manuscript needs a
+  vector or high-DPI raster file. `plotly::save_image()` requires
+  `kaleido` (a Python dependency), so this cannot become a hard
+  dependency of a CRAN package — it has to be a documented recipe or
+  a `Suggests`-guarded helper.
+- **No figure-geometry control.** Neither function exposes size, DPI,
+  margins, or font family / size. A journal figure is specified in
+  millimeters and points, not in viewer-pane pixels.
+- **Hardcoded aesthetics.** Colors are baked in (the wireframe's
+  height gradient, `plot_scatter3d()`'s default marker color). No
+  palette argument, no grayscale mode, no colorblind-safe default —
+  and print submissions still routinely need grayscale.
+- **No legend / annotation control** beyond axis titles.
+- **`lattice` vs `plotly` split.** The two 3D functions render through
+  different engines with different export stories. Anyone producing a
+  figure pair for one paper will hit two different sets of controls.
+
+### Open questions
+
+- Is a `Suggests`-guarded `save_figure()` helper worth it, or is a
+  vignette section with the `kaleido` recipe the honest answer?
+- Should the wireframe move to `plotly` for a single export path, or
+  does `lattice` stay because it is a base-graphics-friendly trellis
+  object? Moving it is a breaking return-type change and would need a
+  deprecation cycle post-CRAN.
+- Grayscale / colorblind-safe palettes: new argument, or a global
+  option?
+
+### Out of scope
+
+- Any change to the concept-demonstration functions
+  (`plot_t_test()`, `plot_sampling()`, `plot_sample_ci()`,
+  `plot_matrix_inverse()`). Those are lecture-hall visuals and there
+  is no reason to make them publication-shaped.
+
+### Related
+
+- `README.Rmd` names this direction and links here.
+- `cran-comments.md` describes the two-part split for reviewers.

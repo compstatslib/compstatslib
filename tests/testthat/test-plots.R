@@ -3,7 +3,7 @@ test_that("Plotting regression points should not produce errors", {
   x <- runif(20) * 50
   y <- (0.5 * x) + rnorm(20)
   points <- data.frame(x, y)
-  expect_error(plot_regr(points), NA)
+  expect_error(plot_regression(points), NA)
 })
 
 # t-test plotting

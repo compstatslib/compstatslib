@@ -10,9 +10,9 @@
 #' @param alpha Significance level (defaults to 0.05).
 #' @param error_matrix Whether to display type I/II error matrix (defaults to FALSE).
 #' 
-#' @usage
-#' plot_t_test(diff = 0.5, sd = 4, n = 100, alpha = 0.05, error_matrix = FALSE)
-#' 
+#' @return No return value, called for side effects (plots to the active
+#' device).
+#'
 #' @examples
 #' plot_t_test()
 #' plot_t_test(diff=-0.1, sd=3)

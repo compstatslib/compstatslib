@@ -24,13 +24,15 @@ data (e.g., \code{rnorm} or \code{runif}).}
 
 \item{...}{Parameters to pass to the \code{distr_func} function specified.}
 }
+\value{
+No return value, called for side effects (plots to the active
+device).
+}
 \description{
 Visualize the confidence intervals of samples drawn from a population.
 }
 \examples{
-\dontrun{
 plot_sample_ci(sample_size=300, distr_func=rnorm, mean=50, sd=10)
 plot_sample_ci(sample_size=300, distr_func=runif, min=17, max=35)
-}
 
 }

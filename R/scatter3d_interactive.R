@@ -1,7 +1,7 @@
 #' compstatslib interactive_scatter3d() function
 #'
 #' Interactive 3D scatterplot. Shiny gadget wrapping
-#' \code{\link{plot_scatter3d}} with column pickers (x / y / z / colour)
+#' \code{\link{plot_scatter3d}} with column pickers (x / y / z / color)
 #' and display-control sliders (aspect ratio per axis, marker opacity,
 #' marker size). The plot re-renders live as inputs change. On Done,
 #' the equivalent \code{plot_scatter3d()} call is printed to the
@@ -23,8 +23,8 @@
 #'   \code{data} to pre-select in the axis pickers. When \code{NULL}
 #'   (default), the first three numeric columns are used.
 #' @param color Optional character. Name of any column of \code{data}
-#'   to pre-select in the colour picker, or \code{NULL} (default) for
-#'   uniform colour.
+#'   to pre-select in the color picker, or \code{NULL} (default) for
+#'   uniform color.
 #' @param aspect,opacity,size Initial values for the aspect-ratio,
 #'   opacity, and marker-size sliders. Same defaults and validation as
 #'   \code{\link{plot_scatter3d}}.
@@ -32,20 +32,25 @@
 #'   Useful for resuming a session at a previously captured view.
 #'   \code{NULL} (default) uses plotly's default view.
 #' @param titles Optional named list / character vector with custom
-#'   axis titles (recognised names: \code{x}, \code{y}, \code{z}).
+#'   axis titles (recognized names: \code{x}, \code{y}, \code{z}).
 #'   Threaded through every render and included in the Done output.
 #' @param ... Further arguments forwarded to \code{\link{plot_scatter3d}}
 #'   on every render. Not echoed in the printed Done call.
 #'
-#' @return On Done, \code{invisible(list(data, x, y, z, color, aspect,
-#'   opacity, size, camera, titles))}; on Cancel, \code{NULL}.
-#'   \code{camera} is \code{NULL} unless the user rotated or zoomed
-#'   during the session (or supplied an initial camera).
+#' @return On "Done", a \code{compstatslib_args} object: a named list of
+#'   \code{data}, \code{x}, \code{y}, \code{z}, \code{color},
+#'   \code{aspect}, \code{opacity}, \code{size}, \code{camera} and
+#'   \code{titles}. It prints the \code{\link{plot_scatter3d}} call that
+#'   reproduces the plot, and is still an ordinary list, so
+#'   \code{do.call(plot_scatter3d, result)} works. \code{camera} is
+#'   \code{NULL} unless the user rotated or zoomed during the session (or
+#'   supplied an initial camera). On "Cancel", \code{NULL}. See
+#'   \link{compstatslib-reproduce}.
 #'
 #' @details
 #' Only numeric columns of \code{data} appear in the x / y / z pickers
 #' (matching \code{\link{plot_scatter3d}}'s numeric-axis contract); the
-#' colour picker offers all columns plus a \code{"(none)"} sentinel.
+#' color picker offers all columns plus a \code{"(none)"} sentinel.
 #' Errors before launching if \code{data} has fewer than three numeric
 #' columns, or if any supplied initial \code{x}/\code{y}/\code{z} is
 #' not a numeric column, or if initial \code{color} is not in
@@ -54,7 +59,7 @@
 #' User-driven rotation and zoom are preserved across slider / picker
 #' re-renders within the gadget. The current camera state is captured
 #' via the \code{plotly_relayout} event and re-passed into each render
-#' so structural changes (e.g. toggling colour) don't reset the view.
+#' so structural changes (e.g. toggling color) don't reset the view.
 #' If the user rotated or zoomed (or a starting \code{camera} was
 #' supplied), the camera is included in the Done output so the
 #' reproduced \code{plot_scatter3d()} call opens at the same view —
@@ -62,12 +67,12 @@
 #'
 #' The printed Done call uses \code{deparse(substitute(data))} captured
 #' at gadget entry, so it shows the user's variable name (e.g.
-#' \code{plot_scatter3d(my_df, ...)}). Args still at their
+#' \code{plot_scatter3d(data = my_df, ...)}). Args still at their
 #' \code{plot_scatter3d()} defaults are omitted from the printed call.
 #' Caveat: inline expressions are reproduced literally — calling
 #' \code{interactive_scatter3d(read.csv("x.csv"))} prints
-#' \code{plot_scatter3d(read.csv("x.csv"), ...)} which re-runs the read
-#' when pasted; capture the data in a variable first to avoid that.
+#' \code{plot_scatter3d(data = read.csv("x.csv"), ...)} which re-runs the
+#' read when pasted; capture the data in a variable first to avoid that.
 #'
 #' This function only works in IDEs that support Shiny gadgets
 #' (RStudio, Positron, etc.).
@@ -77,34 +82,34 @@
 #'   dataset.
 #'
 #' @examples
-#' \dontrun{
-#' # Default synthetic example
-#' interactive_scatter3d()
+#' if (interactive()) {
+#'   # Default synthetic example
+#'   interactive_scatter3d()
 #'
-#' # User's own data
-#' set.seed(1)
-#' my_df <- data.frame(
-#'   score = rnorm(100),
-#'   time  = rnorm(100),
-#'   dose  = rnorm(100),
-#'   group = factor(sample(c("ctrl", "treat"), 100, replace = TRUE))
-#' )
-#' interactive_scatter3d(my_df)
+#'   # User's own data
+#'   set.seed(1)
+#'   my_df <- data.frame(
+#'     score = rnorm(100),
+#'     time  = rnorm(100),
+#'     dose  = rnorm(100),
+#'     group = factor(sample(c("ctrl", "treat"), 100, replace = TRUE))
+#'   )
+#'   interactive_scatter3d(my_df)
 #'
-#' # Pre-position columns and starting display
-#' interactive_scatter3d(my_df,
-#'                       x = "score", y = "time", z = "dose",
-#'                       color = "group",
-#'                       aspect = c(1, 1.5, 1),
-#'                       titles = list(x = "Score", y = "Time",
-#'                                     z = "Dose"))
+#'   # Pre-position columns and starting display
+#'   interactive_scatter3d(my_df,
+#'                         x = "score", y = "time", z = "dose",
+#'                         color = "group",
+#'                         aspect = c(1, 1.5, 1),
+#'                         titles = list(x = "Score", y = "Time",
+#'                                       z = "Dose"))
 #'
-#' # Resume a previous session from its returned state
-#' result <- interactive_scatter3d(my_df)
-#' do.call(interactive_scatter3d, result)
+#'   # Resume a previous session from its returned state
+#'   result <- interactive_scatter3d(my_df)
+#'   do.call(interactive_scatter3d, result)
 #'
-#' # Or finalise the captured view as a non-interactive plot
-#' do.call(plot_scatter3d, result)
+#'   # Or finalize the captured view as a non-interactive plot
+#'   do.call(plot_scatter3d, result)
 #' }
 #'
 #' @export
@@ -238,51 +243,28 @@ interactive_scatter3d <- function(data    = moderation_data, # nolint: object_us
       color_col  <- if (input$color == "(none)") NULL else input$color
       aspect_vec <- c(input$aspect_x, input$aspect_y, input$aspect_z)
       cam        <- camera_state()
-      args <- list(
-        data    = data,
-        x       = input$x,
-        y       = input$y,
-        z       = input$z,
-        color   = color_col,
-        aspect  = aspect_vec,
-        opacity = input$opacity,
-        size    = input$size,
-        camera  = cam,
-        titles  = titles
+      result <- compstatslib_args(
+        list(
+          data    = data,
+          x       = input$x,
+          y       = input$y,
+          z       = input$z,
+          color   = color_col,
+          aspect  = aspect_vec,
+          opacity = input$opacity,
+          size    = input$size,
+          camera  = cam,
+          titles  = titles
+        ),
+        fn       = "plot_scatter3d",
+        defaults = list(color = NULL, aspect = c(1, 1, 1), opacity = 0.8,
+                        size = 5, camera = NULL, titles = NULL),
+        display  = list(data = .verbatim(paste(deparse(data_sym),
+                                               collapse = " ")))
       )
+      print(result)
 
-      parts <- c(deparse(data_sym),
-                 sprintf('x = "%s"', input$x),
-                 sprintf('y = "%s"', input$y),
-                 sprintf('z = "%s"', input$z))
-      if (!is.null(color_col)) {
-        parts <- c(parts, sprintf('color = "%s"', color_col))
-      }
-      if (!isTRUE(all.equal(aspect_vec, c(1, 1, 1)))) {
-        parts <- c(parts,
-                   sprintf("aspect = c(%s)",
-                           paste(aspect_vec, collapse = ", ")))
-      }
-      if (!isTRUE(all.equal(input$opacity, 0.8))) {
-        parts <- c(parts, sprintf("opacity = %s", input$opacity))
-      }
-      if (!isTRUE(all.equal(input$size, 5))) {
-        parts <- c(parts, sprintf("size = %s", input$size))
-      }
-      if (!is.null(cam)) {
-        parts <- c(parts,
-                   sprintf("camera = %s",
-                           paste(deparse(cam), collapse = " ")))
-      }
-      if (!is.null(titles)) {
-        parts <- c(parts,
-                   sprintf("titles = %s",
-                           paste(deparse(titles), collapse = " ")))
-      }
-      cat(sprintf("plot_scatter3d(%s)\n",
-                  paste(parts, collapse = ", ")))
-
-      shiny::stopApp(invisible(args))
+      shiny::stopApp(invisible(result))
     })
 
     shiny::observeEvent(input$cancel, {
