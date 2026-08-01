@@ -28,7 +28,8 @@ figure-generating file.
 The 3D visualizations are the part of the package meant to grow beyond
 the classroom, toward figures good enough for textbooks and manuscripts.
 They are not there yet — see
-[`docs/future-work.md`](docs/future-work.md) for the specific gaps.
+[`docs/future-work.md`](https://github.com/compstatslib/compstatslib/blob/main/docs/future-work.md)
+for the specific gaps.
 
 ## How the functions are organized
 
