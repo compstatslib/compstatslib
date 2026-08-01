@@ -7,7 +7,6 @@
 * windows-latest (GitHub Actions), R release
 * ubuntu-latest (GitHub Actions), R release, R oldrel-1, R devel
 * win-builder, R devel
-* R-hub, CRAN-relevant platforms
 
 ## R CMD check results
 
