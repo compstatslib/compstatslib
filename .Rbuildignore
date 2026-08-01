@@ -16,3 +16,4 @@
 ^\.swsymlink$
 ^conformance-fixtures$
 ^cran-comments\.md$
+^CRAN-SUBMISSION$
