@@ -3,7 +3,7 @@ Type: Package
 Title: Interactive Tools and Plotting Functions to Teach or Learn Basic Concepts in Computational Statistics
 Version: 0.7.1.9000
 Date: 2026-05-11
-Authors@R: c(person("Soumya", "Ray", email = "soumya.ray@gmail.com", role = c("aut", "cre", "ths")),
+Authors@R: c(person("Soumya", "Ray", email = "soumya.ray@gmail.com", role = c("aut", "cre")),
              person("Daniele", "Melotti", email = "danielemelotti@hotmail.com", role = c("aut")))
 Description: Collection of interactive, plotting, and computational functions 
   that help teachers and students learn concepts in computational statistics. 
@@ -15,9 +15,10 @@ Imports:
   shiny
 Depends: R (>= 4.1.0)
 License: MIT + file LICENSE
-URL: https://github.com/soumyaray/compstatslib
-BugReports: https://github.com/soumyaray/compstatslib/issues
+URL: https://github.com/compstatslib/compstatslib
+BugReports: https://github.com/compstatslib/compstatslib/issues
 Encoding: UTF-8
+Language: en-US
 RoxygenNote: 7.3.2
 Suggests: 
     testthat (>= 3.0.0)

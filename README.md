@@ -5,7 +5,7 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/soumyaray/compstatslib/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/soumyaray/compstatslib/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/compstatslib/compstatslib/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/compstatslib/compstatslib/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 This R Package is a collection of interactive tools and helper functions
@@ -91,7 +91,7 @@ Three types of functions are made available:
 
 - `interactive_scatter3d()` Interactive Shiny gadget for exploring three
   numeric columns of a data frame as a rotatable 3D point cloud. Column
-  pickers swap x / y / z (and an optional colour mapping) at runtime;
+  pickers swap x / y / z (and an optional color mapping) at runtime;
   aspect, opacity, and marker-size sliders tune the view. Rotation and
   zoom persist across slider/picker changes within the gadget. On Done,
   prints a reproducible `plot_scatter3d(...)` call to the console —
@@ -99,10 +99,10 @@ Three types of functions are made available:
   zoom can be pasted into an Rmd or script.
 - `plot_scatter3d()` Non-interactive counterpart that returns a `plotly`
   htmlwidget for a 3D scatterplot of three numeric columns. Supports
-  optional colour mapping (numeric → continuous scale; factor /
-  character → discrete palette), aspect-ratio control, marker opacity /
-  size, custom axis titles, and an explicit `camera` argument for
-  reproducing a specific view captured from the gadget.
+  optional color mapping (numeric → continuous scale; factor / character
+  → discrete palette), aspect-ratio control, marker opacity / size,
+  custom axis titles, and an explicit `camera` argument for reproducing
+  a specific view captured from the gadget.
 
 ### Principal Components Analysis
 
@@ -124,7 +124,27 @@ Three types of functions are made available:
   *manipulate* a matrix inversion.
 - `plot_matrix_inverse()` Plotting function that visualizes a matrix and
   its inverse as vector pairs, showing their geometric relationship.
-- `visualize_inverse()` Plotting function that helps visual an inverse.
+
+## Reproducing an Interactive Session
+
+Every `interactive_*()` gadget hands its final state back when you click
+**Done**, and prints the `plot_*()` call that reproduces what was on
+screen. Assign the result and you can either paste that call into a
+script or feed the object straight back:
+
+``` r
+result <- interactive_moderation_3d()
+#> plot_moderation_3d(formula = y ~ x * z, data = moderation_data, z_rot = 125)
+
+do.call(plot_moderation_3d, result)   # same surface, same viewing angle
+```
+
+Gadgets whose state is a set of points return a dataframe you can use as
+one (`nrow()`, `[`, passing it to the plot function). Gadgets whose
+state is a set of settings return a plain named list suitable for
+`do.call()`. Derived results a user would not retype — the `prcomp()`
+fit from `interactive_pca()`, the accumulated draws from
+`interactive_sampling()` — ride along as attributes.
 
 ## Installation
 
@@ -133,7 +153,15 @@ You can install the current development version from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("soumyaray/compstatslib")
+devtools::install_github("compstatslib/compstatslib")
 ```
 
 Feel free to send open issues or send pull requests. Happy hacking!
+
+## Contributors
+
+`compstatslib` is maintained by Soumya Ray.
+
+Daniele Melotti is a co-author of the package. Several of the plotting
+and interactive functions grew out of work he did as a student under
+Soumya Ray’s supervision, and were then folded back into the package.

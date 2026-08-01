@@ -59,7 +59,7 @@ Non-interactive visualization of a moderated regression. Fits an
 \code{lm()} from the supplied formula and data, predicts the outcome
 over a regular grid of the IV and moderator (any other predictors
 held at typical values), and renders the fitted surface as a 3D
-wireframe with a height-mapped colour gradient.
+wireframe with a height-mapped color gradient.
 }
 \details{
 The user's \code{formula} is fitted as-is via \code{lm()}, so any

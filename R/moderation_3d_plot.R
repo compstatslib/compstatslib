@@ -4,7 +4,7 @@
 #' \code{lm()} from the supplied formula and data, predicts the outcome
 #' over a regular grid of the IV and moderator (any other predictors
 #' held at typical values), and renders the fitted surface as a 3D
-#' wireframe with a height-mapped colour gradient.
+#' wireframe with a height-mapped color gradient.
 #'
 #' @param formula A model formula. The first variable on the right-hand
 #'   side is treated as the IV and the second as the moderator when the

@@ -20,7 +20,7 @@ utils::globalVariables(c("moderation_data", "pca_degenerate"))
 #' Synthetic moderation dataset
 #'
 #' A bundled synthetic dataset calibrated to show a clear interaction
-#' (moderation) effect when visualised as a 3D wireframe surface. Used as the
+#' (moderation) effect when visualized as a 3D wireframe surface. Used as the
 #' default \code{data} argument for \code{\link{plot_moderation_3d}} and
 #' \code{\link{interactive_moderation_3d}}, so that calling either function
 #' with no arguments produces a working classroom demonstration.

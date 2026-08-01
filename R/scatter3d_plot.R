@@ -2,7 +2,7 @@
 #'
 #' Non-interactive 3D scatterplot. Renders three numeric columns of a
 #' data frame as a rotatable point cloud, with an optional fourth
-#' column mapped to marker colour.
+#' column mapped to marker color.
 #'
 #' @param data A data frame. Defaults to the bundled
 #'   \code{\link{moderation_data}}.
@@ -12,9 +12,9 @@
 #'   \code{data} has more than three numeric columns, a one-line
 #'   \code{message()} reports the chosen and skipped columns.
 #' @param color Optional character. Name of any column of \code{data}
-#'   to map to marker colour. Numeric columns yield a continuous colour
+#'   to map to marker color. Numeric columns yield a continuous color
 #'   scale; factor / character / logical columns yield a discrete
-#'   palette with a legend. \code{NULL} (default) draws a uniform colour.
+#'   palette with a legend. \code{NULL} (default) draws a uniform color.
 #' @param aspect Length-3 positive numeric vector giving the
 #'   x / y / z aspect ratio (forwarded to plotly's
 #'   \code{scene$aspectratio}). Default \code{c(1, 1, 1)}.
@@ -31,7 +31,7 @@
 #'   \code{uirevision} so user-driven rotation / zoom is preserved
 #'   across re-renders.
 #' @param titles Optional named character vector / list giving custom
-#'   axis titles. Recognised names are \code{x}, \code{y}, \code{z}.
+#'   axis titles. Recognized names are \code{x}, \code{y}, \code{z}.
 #'   Unsupplied axes fall back to the source column name.
 #' @param ... Further arguments forwarded to
 #'   \code{\link[plotly]{plot_ly}}.
@@ -51,10 +51,10 @@
 #' # so a one-line message notes which 3 were picked.
 #' plot_scatter3d()
 #'
-#' # Explicit columns, no colour
+#' # Explicit columns, no color
 #' plot_scatter3d(moderation_data, x = "x", y = "z", z = "y")
 #'
-#' # Map a fourth column to colour
+#' # Map a fourth column to color
 #' plot_scatter3d(moderation_data, x = "x", y = "z", z = "y", color = "w")
 #'
 #' # Stretched aspect, thinner larger markers, custom titles
