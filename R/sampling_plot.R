@@ -13,10 +13,8 @@
 #' @return A \code{list} containing the population data, sample statistics, and other information of interest
 #'
 #' @examples
-#' \dontrun{
 #' plot_sampling(rnorm(100000), sample_size = 100, reps = 50, theta = median)
-#' }
-#' 
+#'
 #' @export
 plot_sampling <- function(population, sample_size, theta, reps = 1,
                           vars = NULL, replot_population = TRUE) {
@@ -37,8 +35,12 @@ plot_sampling <- function(population, sample_size, theta, reps = 1,
   popd <- density(population)
   samd <- density(samples)
   
-  old_par <- par(mfrow = c(3, 1), mar=c(2, 2, 1, 1), cex=0.5)
-  
+  # Capture before setting: par(mfrow=) resets cex as a side effect, so a
+  # combined call would save the already-clobbered cex rather than the user's.
+  old_par <- par(c("mfrow", "mar", "cex"))
+  on.exit(par(old_par), add = TRUE)
+  par(mfrow = c(3, 1), mar=c(2, 2, 1, 1), cex=0.5)
+
   plot(popd, lty = "dotted", lwd = 2, xlim = c(xmin, xmax), xaxt = "n",
        yaxt = "n", frame = FALSE, main = NA)
   axis(1)
@@ -61,8 +63,6 @@ plot_sampling <- function(population, sample_size, theta, reps = 1,
   axis(1)
   theta_count <- paste("Sampling Statistic", "\n(", length(sample_theta), ")")
   text(xmin, max(samh$counts)/2, theta_count, adj = 0)
-  
-  par(old_par)
   
   vars <- list(
     population = population,

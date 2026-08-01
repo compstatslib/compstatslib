@@ -12,10 +12,13 @@ set to TRUE, while it will not mean center the points if set to FALSE. By
 default it is set to TRUE.}
 }
 \value{
-A list containing:
- \item{points}{A dataframe with \code{x} and \code{y} coordinates.}
- \item{pca}{The \code{prcomp} result if 3+ points were added, or
- \code{NULL} otherwise.}
+On "Done", a \code{compstatslib_points} object: the dataframe of
+point coordinates, carrying \code{meancenter} alongside. It prints the
+\code{\link{plot_pca}} call that reproduces the plot and then the points
+themselves, and is still an ordinary dataframe. The \code{prcomp} result
+(or \code{NULL} if fewer than 3 points were added) rides along as
+\code{attr(result, "pca")} rather than appearing in the printed call. On
+"Cancel", \code{NULL}. See \link{compstatslib-reproduce}.
 }
 \description{
 Interactive visualization function that lets you point-and-click to add data
@@ -24,6 +27,22 @@ points, while it automatically plots and updates principal component vectors.
 \details{
 Click on the plotting area to add points and see corresponding principal
 components. Click "Done" to return results to the console.
+}
+\examples{
+if (interactive()) {
+  # Click 3 or more points, then Done
+  pts <- interactive_pca()
+
+  # Reproduce the plot non-interactively
+  plot_pca(pts)
+
+  # The prcomp result is carried along as an attribute
+  attr(pts, "pca")
+
+  # Start without mean-centering
+  interactive_pca(meancenter = FALSE)
+}
+
 }
 \seealso{
 \code{\link{plot_pca}}

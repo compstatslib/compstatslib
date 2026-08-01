@@ -15,12 +15,24 @@ plot_matrix_inverse(x1, y1, x2, y2)
 
 \item{y2}{The second row (or column) vector of the inverse matrix A^(-1).}
 }
+\value{
+No return value, called for side effects (plots to the active
+device).
+}
 \description{
 Non-interactive plotting function that helps visualize an inverse.
 }
 \details{
 The user can choose the magnitude of the vectors, which will be graphically
 represented by the function.
+}
+\examples{
+# A matrix and its inverse: the two parallelograms have reciprocal areas
+plot_matrix_inverse(1, 2, 2, 1)
+
+# A near-singular matrix stretches its inverse dramatically
+plot_matrix_inverse(1, 0.9, 0.9, 1)
+
 }
 \seealso{
 \code{\link{interactive_matrix_inverse}}

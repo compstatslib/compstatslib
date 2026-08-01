@@ -10,3 +10,9 @@
 ^\.github$
 ^LICENSE\.md$
 ^data-raw$
+^\.RData$
+^\.Rhistory$
+^\.swcopy$
+^\.swsymlink$
+^conformance-fixtures$
+^cran-comments\.md$

@@ -3,23 +3,23 @@ description: Release the R package — bump version, verify, merge develop into 
 allowed-tools: Bash(git *), Bash(gh *), Bash(Rscript *)
 ---
 
-# Release Skill
+# R Package Release Skill
 
-Bump the package version, run checks, merge `develop` into `main`, tag, push, and create a GitHub release.
+Bump the package version, run checks, merge `develop` into `main`, tag, push, create a GitHub release, and bump `develop` to a `.9000` dev version.
 
 ## Usage
 
 ```text
-/release <version-or-bump> [--skip-checks]
+/rpkg-release <version-or-bump> [--skip-checks]
 ```
 
 The argument can be an explicit version number or a semantic bump descriptor:
 
-- `/release 0.6.0` — release as version 0.6.0
-- `/release major` — bump the major version (e.g., 0.5.1 -> 1.0.0)
-- `/release minor` or `/release minor bump` — bump the minor version (e.g., 0.5.1 -> 0.6.0)
-- `/release patch` — bump the patch version (e.g., 0.5.1 -> 0.5.2)
-- `/release as a major change` — natural language works too; extract the bump level
+- `/rpkg-release 0.6.0` — release as version 0.6.0
+- `/rpkg-release major` — bump the major version (e.g., 0.5.1 -> 1.0.0)
+- `/rpkg-release minor` or `/rpkg-release minor bump` — bump the minor version (e.g., 0.5.1 -> 0.6.0)
+- `/rpkg-release patch` — bump the patch version (e.g., 0.5.1 -> 0.5.2)
+- `/rpkg-release as a major change` — natural language works too; extract the bump level
 
 Any phrasing that contains "major", "minor", or "patch" should be interpreted as that bump level. If ambiguous, ask the user.
 
@@ -40,9 +40,9 @@ To skip R CMD check, the user can say `--skip-checks`, `skip checks`, `no checks
 
 ### Step 2: Determine version
 
-1. Read the current `Version` from `DESCRIPTION`
+1. Read the current `Version` from `DESCRIPTION`. If it has a `.9000` (or higher fourth-digit) dev suffix (e.g., `0.7.1.9000`), use the base version (`0.7.1`) as the comparison point for bumps.
 2. If the user provided an explicit version (e.g., `0.6.0`), use it
-3. If the user provided a bump descriptor, compute the new version using semver:
+3. If the user provided a bump descriptor, compute the new version using semver from the base (non-dev) version:
    - **major**: increment major, reset minor and patch to 0 (e.g., 0.5.1 -> 1.0.0)
    - **minor**: increment minor, reset patch to 0 (e.g., 0.5.1 -> 0.6.0)
    - **patch**: increment patch (e.g., 0.5.1 -> 0.5.2)
@@ -57,7 +57,7 @@ To skip R CMD check, the user can say `--skip-checks`, `skip checks`, `no checks
 3. Rebuild README: `Rscript -e 'devtools::build_readme(quiet = TRUE)'`
 4. Commit the version bump using the `/commit` skill conventions:
 
-   ```
+   ```text
    docs: bump version to <version>
    ```
 
@@ -125,6 +125,23 @@ Release notes format:
 ```bash
 git checkout develop
 ```
+
+### Step 10: Bump develop to dev version
+
+After a release, `develop` should be ahead of the released version with a `.9000` dev suffix so anyone installing from `develop` can tell they're on in-development code (and not the released version).
+
+1. Set `Version` in `DESCRIPTION` to `<released-version>.9000` (keep `Date` as the release date)
+2. Commit:
+
+   ```text
+   chore: bump develop to <released-version>.9000
+   ```
+
+3. Push develop:
+
+   ```bash
+   git push origin develop
+   ```
 
 Report the release URL to the user.
 

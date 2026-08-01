@@ -4,7 +4,7 @@
 #' \code{lm()} from the supplied formula and data, predicts the outcome
 #' over a regular grid of the IV and moderator (any other predictors
 #' held at typical values), and renders the fitted surface as a 3D
-#' wireframe with a height-mapped colour gradient.
+#' wireframe with a height-mapped color gradient.
 #'
 #' @param formula A model formula. The first variable on the right-hand
 #'   side is treated as the IV and the second as the moderator when the
@@ -89,7 +89,6 @@
 #' plot_moderation_3d(y ~ x + z + w + x:z, moderation_data,
 #'                    iv = "x", mod = "z")
 #'
-#' @importFrom stats lm predict reformulate
 #' @export
 plot_moderation_3d <- function(formula = y ~ x * z,
                                data    = moderation_data, # nolint: object_usage_linter

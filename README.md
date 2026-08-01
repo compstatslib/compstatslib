@@ -5,17 +5,35 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/soumyaray/compstatslib/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/soumyaray/compstatslib/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/compstatslib/compstatslib/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/compstatslib/compstatslib/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-This R Package is a collection of interactive tools and helper functions
-that help teachers and learners learn concepts in computational
-statistics. Useful for homework, in-class demonstrations, or
-self-learning.
+`compstatslib` is a collection of interactive gadgets and plotting
+functions for visualizing data sets and statistical concepts in two and
+three dimensions.
 
-## Major Functions
+Some of it works on **your own data**: explore any data frame as a
+rotatable 3D point cloud, or fit a moderated (interaction) regression
+and rotate its fitted surface to see how the interaction twists it away
+from a plane. The rest **simulates a concept** rather than plotting your
+data — sampling distributions, confidence intervals, t-statistics,
+matrix inversion — and is built for in-class demonstration, homework,
+and self-study.
 
-Three types of functions are made available:
+Every interactive gadget prints the `plot_*()` call that reproduces its
+final view, viewing angle included. Exploration in the viewer pane
+becomes one line you can paste into a script, an Rmd, or a
+figure-generating file.
+
+The 3D visualizations are the part of the package meant to grow beyond
+the classroom, toward figures good enough for textbooks and manuscripts.
+They are not there yet — see
+[`docs/future-work.md`](https://github.com/compstatslib/compstatslib/blob/main/docs/future-work.md)
+for the specific gaps.
+
+## How the functions are organized
+
+Three kinds of function are provided:
 
 - **Interactive functions** let you use your mouse and/or keyboard to
   interact with a visualization of a technique (e.g., regression, PCA)
@@ -25,6 +43,89 @@ Three types of functions are made available:
 - **Code functions** are provided as examples of code that one might
   want to see (they are executable, but the major value is in seeing
   their code)
+
+They are grouped below by what they are *for*, since that varies more
+than the interaction style does.
+
+## Visualizing Data Sets in 3D
+
+These accept arbitrary data frames and model formulas, with control over
+axes, color mapping, aspect ratio, and viewing angle.
+
+### 3D Scatterplots
+
+- `interactive_scatter3d()` Interactive Shiny gadget for exploring three
+  numeric columns of a data frame as a rotatable 3D point cloud. Column
+  pickers swap x / y / z (and an optional color mapping) at runtime;
+  aspect, opacity, and marker-size sliders tune the view. Rotation and
+  zoom persist across slider/picker changes within the gadget. On Done,
+  prints a reproducible `plot_scatter3d(...)` call to the console —
+  including the captured camera position — so the exact rotation and
+  zoom can be pasted into an Rmd or script.
+- `plot_scatter3d()` Non-interactive counterpart that returns a `plotly`
+  htmlwidget for a 3D scatterplot of three numeric columns. Supports
+  optional color mapping (numeric → continuous scale; factor / character
+  → discrete palette), aspect-ratio control, marker opacity / size,
+  custom axis titles, and an explicit `camera` argument for reproducing
+  a specific view captured from the gadget.
+
+### Moderation (Interaction Effects)
+
+- `interactive_moderation_3d()` Interactive Shiny gadget that fits a
+  moderated regression and renders the fitted surface as a rotatable 3D
+  wireframe. Two sliders control the viewing angle, so you can see how
+  an interaction term twists the surface relative to an additive
+  (planar) model.
+- `plot_moderation_3d()` Non-interactive counterpart that returns a
+  `lattice::wireframe` trellis object for the moderation surface.
+  Accepts any model formula (`y ~ x * z`, `y ~ x + z`, or larger models
+  with extra controls — pass `iv` and `mod` to choose which two
+  predictors are plotted; the rest are held at typical values).
+- `moderation_data` Bundled synthetic dataset used as the default
+  example for the two functions above; calibrated to make the
+  interaction effect visually obvious. Includes an unrelated noise
+  variable `w` for demonstrating multi-predictor formulas.
+
+## Fitting and Visualizing 2D Relationships
+
+These plot a dataframe of `x` / `y` points that you supply, together
+with a fitted model. They are sized for small data — points you click in
+by hand or a modest dataframe — rather than for arbitrary data:
+`plot_regression()` draws in a fixed −5 to 50 window, and `plot_pca()`
+expects exactly two columns named `x` and `y`.
+
+### Linear Regression
+
+- `interactive_regression()` Interactive visualization function that
+  lets you point-and-click to add data points, while it automatically
+  plots and updates a regression line and associated statistics.
+- `plot_regression()` Plotting function that takes a dataframe of points
+  (x, y) and plots them with a regression line and associated
+  statistics.
+
+### Logistic Regression
+
+- `interactive_logit()` Interactive visualization function that lets you
+  point-and-click to add data points, while it automatically plots and
+  updates a logistic regression line and associated statistics.
+- `plot_logit()` Plotting function that takes a dataframe of points
+  (x, y) and plots them with a logistic regression curve and associated
+  statistics. The x-axis range adapts to the data you pass.
+
+### Principal Components Analysis
+
+- `interactive_pca()` Interactive visualization function that lets you
+  point-and-click to add data points, while it automatically plots and
+  updates principal component vectors.
+- `plot_pca()` Plotting function that takes a dataframe of points (x, y)
+  and plots them with their principal component vectors. Supports
+  optional mean-centering.
+
+## Simulations and Concept Demonstrations
+
+These do not plot your data. They simulate a process, or draw a
+geometric object, so that a concept can be watched rather than
+described.
 
 ### Statistical Tests
 
@@ -52,79 +153,38 @@ Three types of functions are made available:
   given population function, with each sample’s confidence intervals
   displayed.
 
-### Linear Regression
-
-- `interactive_regression()` Interactive visualization function that
-  lets you point-and-click to add data points, while it automatically
-  plots and updates a regression line and associated statistics.
-- `plot_regr()` Plotting function that takes a dataframe of points
-  (x, y) and plots them with a regression line and associated
-  statistics.
-
-### Logistic Regression
-
-- `interactive_logit()` Interactive visualization function that lets you
-  point-and-click to add data points, while it automatically plots and
-  updates a logistic regression line and associated statistics.
-- `plot_logit()` Plotting function that takes a dataframe of points
-  (x, y) and plots them with a logistic regression curve and associated
-  statistics.
-
-### Moderation (Interaction Effects)
-
-- `interactive_moderation_3d()` Interactive Shiny gadget that fits a
-  moderated regression and renders the fitted surface as a rotatable 3D
-  wireframe. Two sliders control the viewing angle so students can see
-  how an interaction term twists the surface relative to an additive
-  (planar) model.
-- `plot_moderation_3d()` Non-interactive counterpart that returns a
-  `lattice::wireframe` trellis object for the moderation surface.
-  Accepts any model formula (`y ~ x * z`, `y ~ x + z`, or larger models
-  with extra controls — pass `iv` and `mod` to choose which two
-  predictors are plotted; the rest are held at typical values).
-- `moderation_data` Bundled synthetic dataset used as the default
-  example for the two functions above; calibrated to make the
-  interaction effect visually obvious. Includes an unrelated noise
-  variable `w` for demonstrating multi-predictor formulas.
-
-### 3D Scatterplots
-
-- `interactive_scatter3d()` Interactive Shiny gadget for exploring three
-  numeric columns of a data frame as a rotatable 3D point cloud. Column
-  pickers swap x / y / z (and an optional colour mapping) at runtime;
-  aspect, opacity, and marker-size sliders tune the view. Rotation and
-  zoom persist across slider/picker changes within the gadget. On Done,
-  prints a reproducible `plot_scatter3d(...)` call to the console —
-  including the captured camera position — so the exact rotation and
-  zoom can be pasted into an Rmd or script.
-- `plot_scatter3d()` Non-interactive counterpart that returns a `plotly`
-  htmlwidget for a 3D scatterplot of three numeric columns. Supports
-  optional colour mapping (numeric → continuous scale; factor /
-  character → discrete palette), aspect-ratio control, marker opacity /
-  size, custom axis titles, and an explicit `camera` argument for
-  reproducing a specific view captured from the gadget.
-
-### Principal Components Analysis
-
-- `interactive_pca()` Interactive visualization function that lets you
-  point-and-click to add data points, while it automatically plots and
-  updates principal component vectors.
-- `plot_pca()` Plotting function that takes a dataframe of points (x, y)
-  and plots them with their principal component vectors. Supports
-  optional mean-centering.
-
-### Precision
-
-- `machine_precision()` Code function that shows how to find the
-  smallest number your computer can effectively represent
-
 ### Linear Algebra
 
 - `interactive_matrix_inverse()` Interactive function that allows one to
   *manipulate* a matrix inversion.
 - `plot_matrix_inverse()` Plotting function that visualizes a matrix and
   its inverse as vector pairs, showing their geometric relationship.
-- `visualize_inverse()` Plotting function that helps visual an inverse.
+
+### Precision
+
+- `machine_precision()` Code function that shows how to find the
+  smallest number your computer can effectively represent
+
+## Reproducing an Interactive Session
+
+Every `interactive_*()` gadget hands its final state back when you click
+**Done**, and prints the `plot_*()` call that reproduces what was on
+screen. Assign the result and you can either paste that call into a
+script or feed the object straight back:
+
+``` r
+result <- interactive_moderation_3d()
+#> plot_moderation_3d(formula = y ~ x * z, data = moderation_data, z_rot = 125)
+
+do.call(plot_moderation_3d, result)   # same surface, same viewing angle
+```
+
+Gadgets whose state is a set of points return a dataframe you can use as
+one (`nrow()`, `[`, passing it to the plot function). Gadgets whose
+state is a set of settings return a plain named list suitable for
+`do.call()`. Derived results a user would not retype — the `prcomp()`
+fit from `interactive_pca()`, the accumulated draws from
+`interactive_sampling()` — ride along as attributes.
 
 ## Installation
 
@@ -133,7 +193,15 @@ You can install the current development version from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("soumyaray/compstatslib")
+devtools::install_github("compstatslib/compstatslib")
 ```
 
 Feel free to send open issues or send pull requests. Happy hacking!
+
+## Contributors
+
+`compstatslib` is maintained by Soumya Ray.
+
+Daniele Melotti is a co-author of the package. Several of the plotting
+and interactive functions grew out of work he did as a student under
+Soumya Ray’s supervision, and were then folded back into the package.

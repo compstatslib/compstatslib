@@ -14,7 +14,3 @@ CLAUDE.local.md
 !.claude/settings.json
 !.claude/skills/
 !.claude/CLAUDE.md
-
-# Sideways files (see tool: https://github.com/soumyaray/sideways)
-.swcopy
-.swsymlink

@@ -9,12 +9,13 @@
 #'                   data (e.g., \code{rnorm} or \code{runif}).
 #' @param ... Parameters to pass to the \code{distr_func} function specified.
 #'
+#' @return No return value, called for side effects (plots to the active
+#' device).
+#'
 #' @examples
-#' \dontrun{
 #' plot_sample_ci(sample_size=300, distr_func=rnorm, mean=50, sd=10)
 #' plot_sample_ci(sample_size=300, distr_func=runif, min=17, max=35)
-#' }
-#' 
+#'
 #' @export
 plot_sample_ci <- function(num_samples = 100, sample_size = 100, 
                                 pop_size=10000, distr_func=rnorm, ...) {

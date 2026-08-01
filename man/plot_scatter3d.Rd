@@ -29,9 +29,9 @@ the first three numeric columns of \code{data} are used; if
 \code{message()} reports the chosen and skipped columns.}
 
 \item{color}{Optional character. Name of any column of \code{data}
-to map to marker colour. Numeric columns yield a continuous colour
+to map to marker color. Numeric columns yield a continuous color
 scale; factor / character / logical columns yield a discrete
-palette with a legend. \code{NULL} (default) draws a uniform colour.}
+palette with a legend. \code{NULL} (default) draws a uniform color.}
 
 \item{aspect}{Length-3 positive numeric vector giving the
 x / y / z aspect ratio (forwarded to plotly's
@@ -53,7 +53,7 @@ plotly's default view. The plot also sets a constant
 across re-renders.}
 
 \item{titles}{Optional named character vector / list giving custom
-axis titles. Recognised names are \code{x}, \code{y}, \code{z}.
+axis titles. Recognized names are \code{x}, \code{y}, \code{z}.
 Unsupplied axes fall back to the source column name.}
 
 \item{...}{Further arguments forwarded to
@@ -65,7 +65,7 @@ A \code{plotly} htmlwidget. Print or assign to render.
 \description{
 Non-interactive 3D scatterplot. Renders three numeric columns of a
 data frame as a rotatable point cloud, with an optional fourth
-column mapped to marker colour.
+column mapped to marker color.
 }
 \details{
 Axis types (\code{x} / \code{y} / \code{z}) must be numeric. Factor,
@@ -77,10 +77,10 @@ clear error pointing to \code{color} for categorical separation.
 # so a one-line message notes which 3 were picked.
 plot_scatter3d()
 
-# Explicit columns, no colour
+# Explicit columns, no color
 plot_scatter3d(moderation_data, x = "x", y = "z", z = "y")
 
-# Map a fourth column to colour
+# Map a fourth column to color
 plot_scatter3d(moderation_data, x = "x", y = "z", z = "y", color = "w")
 
 # Stretched aspect, thinner larger markers, custom titles

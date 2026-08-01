@@ -29,6 +29,14 @@ If 3 or more points are provided, invisibly returns the
 \description{
 Plots data points and their principal component vectors.
 }
+\examples{
+points <- data.frame(x = c(-20, -5, 5, 15, 30), y = c(-15, -10, 5, 10, 25))
+plot_pca(points)
+
+# Without mean-centering, the components are anchored at the origin
+plot_pca(points, meancenter = FALSE)
+
+}
 \seealso{
 \code{\link{interactive_pca}}
 }

@@ -4,20 +4,28 @@
 \alias{interactive_matrix_inverse}
 \title{compstatslib interactive_matrix_inverse() function}
 \usage{
-interactive_matrix_inverse(x1_init = 1, y1_init = 2, x2_init = 2, y2_init = 1)
+interactive_matrix_inverse(x1 = 1, y1 = 2, x2 = 2, y2 = 1)
 }
 \arguments{
-\item{x1_init}{The first row (or column) vector of matrix A. This parameter is set to 1 by default.}
+\item{x1}{The first row (or column) vector of matrix A. This parameter is set to 1 by default.}
 
-\item{y1_init}{The second row (or column) vector of matrix A. This parameter is set to 2 by default.
+\item{y1}{The second row (or column) vector of matrix A. This parameter is set to 2 by default.
 
 The area of the parallelogram resulting from these two vectors is the determinant of matrix A.}
 
-\item{x2_init}{The first row (or column) vector of the inverse matrix A^(-1). This parameter is set to 2 by default.}
+\item{x2}{The first row (or column) vector of the inverse matrix A^(-1). This parameter is set to 2 by default.}
 
-\item{y2_init}{The second row (or column) vector of the inverse matrix A^(-1). This parameter is set to 1 by default.
+\item{y2}{The second row (or column) vector of the inverse matrix A^(-1). This parameter is set to 1 by default.
 
 The area of the parallelogram resulting from these two vectors is the determinant of the inverse matrix A^(-1).}
+}
+\value{
+On "Done", a \code{compstatslib_args} object: a named list of
+\code{x1}, \code{y1}, \code{x2} and \code{y2} at their final slider
+positions, which prints the \code{\link{plot_matrix_inverse}} call that
+reproduces the plot. It is still an ordinary list, so
+\code{do.call(plot_matrix_inverse, result)} works. On "Cancel",
+\code{NULL}. See \link{compstatslib-reproduce}.
 }
 \description{
 Interactive function that allows one to visualize a matrix inversion
@@ -29,6 +37,19 @@ Inspired by: \url{https://math.stackexchange.com/questions/295250/geometric-inte
 
 Use the sliders in the viewer to adjust the matrix parameters and see the
 resulting transformation. Click "Done" to close.
+}
+\examples{
+if (interactive()) {
+  # Move the sliders, then Done
+  result <- interactive_matrix_inverse()
+
+  # Reproduce the plot non-interactively
+  do.call(plot_matrix_inverse, result)
+
+  # Or resume the gadget where it was left
+  do.call(interactive_matrix_inverse, result)
+}
+
 }
 \seealso{
 \code{\link{plot_matrix_inverse}}
