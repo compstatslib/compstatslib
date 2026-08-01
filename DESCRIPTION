@@ -2,7 +2,7 @@ Package: compstatslib
 Type: Package
 Title: Interactive 2D and 3D Visualization of Data and Statistical Concepts
 Version: 0.8.0
-Date: 2026-08-01
+Date: 2026-08-02
 Authors@R: c(person("Soumya", "Ray", email = "soumya.ray@gmail.com", role = c("aut", "cre")),
              person("Daniele", "Melotti", email = "danielemelotti@hotmail.com", role = c("aut")))
 Description: Interactive gadgets and plotting functions for visualizing data
