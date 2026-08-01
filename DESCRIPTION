@@ -1,8 +1,8 @@
 Package: compstatslib
 Type: Package
 Title: Interactive Tools and Plotting Functions to Teach or Learn Basic Concepts in Computational Statistics
-Version: 0.7.1.9000
-Date: 2026-05-11
+Version: 0.8.0
+Date: 2026-08-01
 Authors@R: c(person("Soumya", "Ray", email = "soumya.ray@gmail.com", role = c("aut", "cre")),
              person("Daniele", "Melotti", email = "danielemelotti@hotmail.com", role = c("aut")))
 Description: Collection of interactive, plotting, and computational functions 

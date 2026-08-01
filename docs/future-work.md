@@ -284,11 +284,13 @@ dependencies.
    datasets — one continuous-heavy, one mixed-with-categorical — may
    be cleaner. Cost: more `?dataname` entries to maintain and more
    choice for users to make.
-2. **Replace or add?** Keep `moderation_data` (existing examples and
-   tests reference it; the function-name pair `plot_moderation_3d` /
-   `moderation_data` is mnemonic) and add the new dataset alongside,
-   versus retire `moderation_data` and migrate everything. Leaning
-   "add" — `moderation_data` earns its keep as a
+2. **Replace or add?** ~~Open.~~ **Settled: add.** As of the v0.8.0 CRAN
+   release this is no longer a free choice. Four exported functions carry
+   `data = moderation_data` as a default, so an argument-less call is now
+   part of the released compatibility surface: repointing
+   `moderation_data` at different data would silently change the output
+   of code that already works. Any new dataset must be **added**
+   alongside it. `moderation_data` also still earns its keep as a
    *clean / no-confounders* demo for moderation specifically.
 3. **License and provenance.** Real datasets need a documented
    source and license. Bundle the cleaning code under
