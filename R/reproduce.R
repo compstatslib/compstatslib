@@ -23,6 +23,24 @@
 #'
 #' @return \code{x}, invisibly. Called for the printed reproduction call.
 #'
+#' @examples
+#' if (interactive()) {
+#'   # A settings-style gadget returns compstatslib_args
+#'   result <- interactive_t_test()
+#'   result                              # prints plot_t_test(...)
+#'   do.call(plot_t_test, result)        # still a plain list
+#'
+#'   # A points-style gadget returns compstatslib_points
+#'   pts <- interactive_regression()
+#'   pts                                 # prints the call, then the points
+#'   nrow(pts)                           # still a plain dataframe
+#'   plot_regression(pts)
+#'
+#'   # Derived state rides along as an attribute
+#'   pca_pts <- interactive_pca()
+#'   attr(pca_pts, "pca")
+#' }
+#'
 #' @name compstatslib-reproduce
 NULL
 

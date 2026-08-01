@@ -23,6 +23,14 @@ interactive_t_test(
 
 \item{error_matrix}{Logical; whether to show the error matrix initially.}
 }
+\value{
+On "Done", a \code{compstatslib_args} object: a named list of
+\code{diff}, \code{sd}, \code{n}, \code{alpha} and \code{error_matrix} at
+their final slider positions, which prints the \code{\link{plot_t_test}}
+call that reproduces the plot. It is still an ordinary list, so
+\code{do.call(plot_t_test, result)} works. On "Cancel", \code{NULL}. See
+\link{compstatslib-reproduce}.
+}
 \description{
 Interactive visualization that allows one to adjust the parameters affecting
 hypothesis testing in order to see how their variation influences the null t
@@ -36,6 +44,19 @@ Click "Done" to close.
 
 All five arguments match \code{\link{plot_t_test}}'s, so a gadget session can
 be resumed from a previous result.
+}
+\examples{
+if (interactive()) {
+  # Move the sliders, then Done
+  result <- interactive_t_test()
+
+  # Reproduce the plot non-interactively
+  do.call(plot_t_test, result)
+
+  # Or launch pre-configured for a small, noisy study
+  interactive_t_test(diff = 0.2, sd = 5, n = 30)
+}
+
 }
 \seealso{
 \code{\link{plot_t_test}}

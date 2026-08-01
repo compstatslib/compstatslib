@@ -13,10 +13,8 @@
 #' @return A \code{list} containing the population data, sample statistics, and other information of interest
 #'
 #' @examples
-#' \dontrun{
 #' plot_sampling(rnorm(100000), sample_size = 100, reps = 50, theta = median)
-#' }
-#' 
+#'
 #' @export
 plot_sampling <- function(population, sample_size, theta, reps = 1,
                           vars = NULL, replot_population = TRUE) {

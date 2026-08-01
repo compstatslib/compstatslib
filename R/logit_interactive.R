@@ -19,7 +19,11 @@
 #' @param ... Further arguments passed to the \code{plot_logit()} function that
 #' produces the plot.
 #'
-#' @return A \code{dataframe} containing the points coordinates.
+#' @return On "Done", a \code{compstatslib_points} object: the dataframe of
+#' point coordinates, carrying \code{formula}, \code{min_x} and \code{max_x}
+#' alongside. It prints the \code{\link{plot_logit}} call that reproduces the
+#' plot and then the points themselves, and is still an ordinary dataframe. On
+#' "Cancel", \code{NULL}. See \link{compstatslib-reproduce}.
 #'
 #' @details
 #' Click on the plotting area to add points and see a corresponding logistic
@@ -28,13 +32,15 @@
 #' @seealso \code{\link{plot_logit}}
 #'
 #' @examples
-#' \dontrun{
-#' # Selecting coordinates on the plot area, storing them in 'pts'
-#' pts <- interactive_logit()
+#' if (interactive()) {
+#'   # Selecting coordinates on the plot area, storing them in 'pts'
+#'   pts <- interactive_logit()
 #'
-#' # Replotting the points stored earlier in 'pts', allowing the user to
-#' # continue the interactive regression
-#' interactive_logit(pts)
+#'   # Reproduce the curve non-interactively
+#'   plot_logit(pts, formula = y ~ x)
+#'
+#'   # Or replot them in the gadget and keep clicking
+#'   interactive_logit(pts)
 #' }
 #' @export
 interactive_logit <- function(points = data.frame(), formula = y ~ x,

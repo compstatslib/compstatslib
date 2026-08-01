@@ -14,6 +14,13 @@
 #'
 #' @param error_matrix Logical; whether to show the error matrix initially.
 #'
+#' @return On "Done", a \code{compstatslib_args} object: a named list of
+#' \code{diff}, \code{sd}, \code{n}, \code{alpha} and \code{error_matrix} at
+#' their final slider positions, which prints the \code{\link{plot_t_test}}
+#' call that reproduces the plot. It is still an ordinary list, so
+#' \code{do.call(plot_t_test, result)} works. On "Cancel", \code{NULL}. See
+#' \link{compstatslib-reproduce}.
+#'
 #' @details
 #' Use the sliders in the viewer to adjust parameters. The movement of the
 #' alternative t-statistics distribution with respect to the null distribution
@@ -24,6 +31,18 @@
 #' be resumed from a previous result.
 #'
 #' @seealso \code{\link{plot_t_test}}
+#'
+#' @examples
+#' if (interactive()) {
+#'   # Move the sliders, then Done
+#'   result <- interactive_t_test()
+#'
+#'   # Reproduce the plot non-interactively
+#'   do.call(plot_t_test, result)
+#'
+#'   # Or launch pre-configured for a small, noisy study
+#'   interactive_t_test(diff = 0.2, sd = 5, n = 30)
+#' }
 #'
 #' @export
 interactive_t_test <- function(diff = 0.5, sd = 4, n = 100, alpha = 0.05,

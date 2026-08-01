@@ -17,6 +17,10 @@ plot_t_test(diff = 0.5, sd = 4, n = 100, alpha = 0.05, error_matrix = FALSE)
 
 \item{error_matrix}{Whether to display type I/II error matrix (defaults to FALSE).}
 }
+\value{
+No return value, called for side effects (plots to the active
+device).
+}
 \description{
 Non-interactive visualization function that plots null and alternative
 t distributions of a t-test. Shows rejection zone and power as areas

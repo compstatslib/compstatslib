@@ -46,10 +46,15 @@ Threaded through every render and included in the Done output.}
 on every render. Not echoed in the printed Done call.}
 }
 \value{
-On Done, \code{invisible(list(data, x, y, z, color, aspect,
-  opacity, size, camera, titles))}; on Cancel, \code{NULL}.
-  \code{camera} is \code{NULL} unless the user rotated or zoomed
-  during the session (or supplied an initial camera).
+On "Done", a \code{compstatslib_args} object: a named list of
+  \code{data}, \code{x}, \code{y}, \code{z}, \code{color},
+  \code{aspect}, \code{opacity}, \code{size}, \code{camera} and
+  \code{titles}. It prints the \code{\link{plot_scatter3d}} call that
+  reproduces the plot, and is still an ordinary list, so
+  \code{do.call(plot_scatter3d, result)} works. \code{camera} is
+  \code{NULL} unless the user rotated or zoomed during the session (or
+  supplied an initial camera). On "Cancel", \code{NULL}. See
+  \link{compstatslib-reproduce}.
 }
 \description{
 Interactive 3D scatterplot. Shiny gadget wrapping
@@ -101,34 +106,34 @@ This function only works in IDEs that support Shiny gadgets
 (RStudio, Positron, etc.).
 }
 \examples{
-\dontrun{
-# Default synthetic example
-interactive_scatter3d()
+if (interactive()) {
+  # Default synthetic example
+  interactive_scatter3d()
 
-# User's own data
-set.seed(1)
-my_df <- data.frame(
-  score = rnorm(100),
-  time  = rnorm(100),
-  dose  = rnorm(100),
-  group = factor(sample(c("ctrl", "treat"), 100, replace = TRUE))
-)
-interactive_scatter3d(my_df)
+  # User's own data
+  set.seed(1)
+  my_df <- data.frame(
+    score = rnorm(100),
+    time  = rnorm(100),
+    dose  = rnorm(100),
+    group = factor(sample(c("ctrl", "treat"), 100, replace = TRUE))
+  )
+  interactive_scatter3d(my_df)
 
-# Pre-position columns and starting display
-interactive_scatter3d(my_df,
-                      x = "score", y = "time", z = "dose",
-                      color = "group",
-                      aspect = c(1, 1.5, 1),
-                      titles = list(x = "Score", y = "Time",
-                                    z = "Dose"))
+  # Pre-position columns and starting display
+  interactive_scatter3d(my_df,
+                        x = "score", y = "time", z = "dose",
+                        color = "group",
+                        aspect = c(1, 1.5, 1),
+                        titles = list(x = "Score", y = "Time",
+                                      z = "Dose"))
 
-# Resume a previous session from its returned state
-result <- interactive_scatter3d(my_df)
-do.call(interactive_scatter3d, result)
+  # Resume a previous session from its returned state
+  result <- interactive_scatter3d(my_df)
+  do.call(interactive_scatter3d, result)
 
-# Or finalise the captured view as a non-interactive plot
-do.call(plot_scatter3d, result)
+  # Or finalize the captured view as a non-interactive plot
+  do.call(plot_scatter3d, result)
 }
 
 }

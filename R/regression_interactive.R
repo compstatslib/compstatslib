@@ -11,8 +11,14 @@
 #' @param ... Further arguments passed to the \code{plot_regression()} function that
 #' produces the plot.
 #'
-#' @return A \code{dataframe} containing the points coordinates. Additionally,
-#' the following parameters are provided on the plot area:
+#' @return On "Done", a \code{compstatslib_points} object: the dataframe of
+#' point coordinates, which prints the \code{\link{plot_regression}} call that
+#' reproduces the plot and then the points themselves. It is still an ordinary
+#' dataframe, so \code{nrow()}, \code{[} and
+#' \code{plot_regression(result)} all work. On "Cancel", \code{NULL}. See
+#' \link{compstatslib-reproduce}.
+#'
+#' The plot area additionally displays:
 #'  \item{Raw intercept}{The y-coordinate at which the regression line crosses
 #'  the y-axis.}
 #'  \item{Raw slope}{The value of the slope parameter.}
@@ -29,19 +35,19 @@
 #' @seealso \code{\link{plot_regression}}
 #'
 #' @examples
-#' \dontrun{
-#' # Selecting coordinates on the plot area, storing them in 'pts'
-#' pts <- interactive_regression()
+#' if (interactive()) {
+#'   # Selecting coordinates on the plot area, storing them in 'pts'
+#'   pts <- interactive_regression()
 #'
-#' # Replotting the points stored earlier in 'pts', allowing the user to
-#' # continue the interactive regression
-#' interactive_regression(pts)
+#'   # Reproduce the plot non-interactively from what came back
+#'   plot_regression(pts)
 #'
-#' # Providing coordinates beforehand
-#' points <- data.frame(x = c(1, 4, 7), y = c(2, 5, 8))
+#'   # Or replot them in the gadget and keep clicking
+#'   interactive_regression(pts)
 #'
-#' # Replotting the coordinates and continuing the interactive regression
-#' interactive_regression(points)
+#'   # Providing coordinates beforehand
+#'   points <- data.frame(x = c(1, 4, 7), y = c(2, 5, 8))
+#'   interactive_regression(points)
 #' }
 #' @export
 interactive_regression <- function(points = data.frame(), ...) {

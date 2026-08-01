@@ -14,6 +14,13 @@
 #'
 #' @seealso \code{\link{interactive_pca}}
 #'
+#' @examples
+#' points <- data.frame(x = c(-20, -5, 5, 15, 30), y = c(-15, -10, 5, 10, 25))
+#' plot_pca(points)
+#'
+#' # Without mean-centering, the components are anchored at the origin
+#' plot_pca(points, meancenter = FALSE)
+#'
 #' @export
 plot_pca <- function(points = data.frame(),
                      meancenter = TRUE,

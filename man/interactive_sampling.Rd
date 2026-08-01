@@ -15,6 +15,17 @@ distribution you wish to simulate.}
 \item{theta}{The \code{function} that computes the statistic of interest
 from each sample (e.g., \code{mean} or \code{median}).}
 }
+\value{
+On "Done", a \code{compstatslib_args} object: a named list of
+\code{population}, \code{sample_size}, \code{theta} and \code{reps} as last
+set, which prints the \code{\link{plot_sampling}} call that reproduces the
+plot. It is still an ordinary list, so \code{do.call(plot_sampling, result)}
+works. The accumulated sampling cache rides along as
+\code{attr(result, "vars")} rather than appearing in the printed call —
+pass it as \code{plot_sampling(vars =)} to keep building on the same
+sampling distribution instead of starting fresh. On "Cancel", \code{NULL}.
+See \link{compstatslib-reproduce}.
+}
 \description{
 Interactive visualization to sample from a population and see how a given
 sampling statistic (theta) is distributed.
@@ -22,12 +33,26 @@ sampling statistic (theta) is distributed.
 \details{
 Use the controls in the viewer to draw more samples or change simulation
 parameters. Click "Done" to return results to the console.
+
+The printed call shows the expressions you passed for \code{population} and
+\code{theta} rather than their values, so capture the population in a
+variable first if you want a pasteable call that does not re-simulate it.
 }
 \examples{
-\dontrun{
-interactive_sampling(rnorm(100000))
+if (interactive()) {
+  my_pop <- rnorm(100000)
+  result <- interactive_sampling(my_pop)
 
-interactive_sampling(c(rnorm(100000, mean = 4), rnorm(100000, mean=-4)),
-                     theta = median)
+  # Reproduce the plot non-interactively (draws fresh samples)
+  do.call(plot_sampling, result)
+
+  # Or continue from the samples already accumulated in the gadget
+  do.call(plot_sampling, c(result, list(vars = attr(result, "vars"))))
+
+  bimodal <- c(rnorm(100000, mean = 4), rnorm(100000, mean = -4))
+  interactive_sampling(bimodal, theta = median)
 }
+}
+\seealso{
+\code{\link{plot_sampling}}
 }

@@ -5,9 +5,13 @@
 #' 
 #' @return A numeric value representing the smallest possible number that the user's computer can effectively represent.
 #' 
-#' @usage 
+#' @examples
 #' machine_precision()
-#' 
+#'
+#' # Anything smaller is swallowed by rounding
+#' 1 + machine_precision() != 1
+#' 1 + machine_precision() / 2 != 1
+#'
 #' @export
 machine_precision <- function() {
   .Machine$double.eps

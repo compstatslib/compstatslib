@@ -36,8 +36,16 @@ two predictors.}
 \code{\link[lattice]{wireframe}}).}
 }
 \value{
-The \code{data} argument, returned invisibly when the user
-  clicks "Done"; \code{NULL} if the gadget is cancelled.
+On "Done", a \code{compstatslib_args} object: a named list of
+  \code{formula}, \code{data}, \code{iv}, \code{mod} and — crucially —
+  the \code{z_rot} / \code{x_rot} viewing angles the gadget was left at,
+  plus anything passed through \code{...}. It prints the
+  \code{\link{plot_moderation_3d}} call that reproduces the view, and is
+  still an ordinary list, so \code{do.call(plot_moderation_3d, result)}
+  works. On "Cancel", \code{NULL}. See \link{compstatslib-reproduce}.
+
+  The printed call shows the expression you passed for \code{data} rather
+  than its values, so pass a named variable if you want a pasteable call.
 }
 \description{
 Interactive 3D moderation visualization. Shiny gadget wrapping
@@ -83,6 +91,11 @@ if (interactive()) {
   # rest are held at typical values (here, `mean(w)`).
   interactive_moderation_3d(y ~ x + z + w + x:z, moderation_data,
                             iv = "x", mod = "z")
+
+  # Rotate to an angle worth keeping, click Done, then freeze that
+  # exact view into a script or report
+  result <- interactive_moderation_3d()
+  do.call(plot_moderation_3d, result)
 }
 
 }
