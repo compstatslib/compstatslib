@@ -38,6 +38,25 @@ Current function pairs: regression, logit, t-test, sampling, sample CI, matrix i
 
 Standalone utility: `precision.R` (machine precision demonstration).
 
+## Related packages
+
+`../compstatslib-ts` is a TypeScript/browser port of this package, published to
+npm as `@compstats/core` (repo: `compstatslib/compstatslib-ts`). It covers the
+same nine function families in three layers — `src/core/` (statistics, no DOM),
+`src/plot/` (Canvas 2D and Plotly renderers), `src/interactive/` (components).
+
+**This R package is canonical for the statistics and the plotting logic.** The
+port follows it, and asserts its core math against fixtures generated here in
+`conformance-fixtures/`. Its `CHANGELOG.md` states every deliberate departure.
+
+Because the port re-implements R's primitives by hand, it sometimes finds
+defects in this package's logic. When either side changes behavior, check the
+other:
+
+- Fixes made here should be mirrored in the port (it tracks R's rules).
+- Fixes made there may be backports due here — the port's changelog entries
+  that read "R does X, this follows / this departs" are the ones to read.
+
 ## Key Conventions
 
 - **R >= 4.1.0** required.
@@ -53,3 +72,9 @@ Standalone utility: `precision.R` (machine precision demonstration).
 - **main**: release branch
 - **develop**: active development branch
 - Feature branches branch from and merge back to `develop`
+- **Commits arriving from the port** — a Claude Code session in
+  `../compstatslib-ts` may commit here, normally to add a script under
+  `conformance-fixtures/` and its row in that directory's README. Such commits
+  go **directly on `develop`**: not on a feature branch, and never on `main`.
+  They add cases and scripts; they do not edit existing scripts (see
+  `conformance-fixtures/README.md`, "Changing a script").

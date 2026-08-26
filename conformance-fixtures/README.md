@@ -71,3 +71,11 @@ ports against its output, and say in the commit which values moved and why.
 
 Adding a case is safer than editing one: a port that does not know about the
 new case keeps passing, and a port that adopts it gains coverage.
+
+## Scripts contributed by a port
+
+A port may add a script here for a primitive this package never exports but
+the port had to write — the TypeScript port's linear-algebra layer is the
+first case. Such a script follows the conventions above, names the test files
+that consume it, and gets a row in the table. It is committed straight to
+`develop`, the same as any other contribution to this package.
