@@ -376,3 +376,88 @@ report_lu("3j F4a (-2, -1.6, -1.5, -1.2)", matrix(c(-2, -1.6, -1.5, -1.2), nrow 
 report_condition("3k solve of a non-square matrix", solve(matrix(1:6, nrow = 2)))
 report_condition("3k solve(A, b) with b of the wrong length", solve(S, c(1, 2)))
 report_condition("3k det of a non-square matrix", det(matrix(1:6, nrow = 2)))
+
+## ===========================================================================
+## Section 4 — model.matrix() and lm()
+## ===========================================================================
+##
+## The bridge from a data frame to a design: model.matrix() names its
+## columns as lm() names its coefficients — (Intercept), the main effects in
+## formula order, then the interactions — and drops incomplete rows the way
+## model.frame() does. lm() is qr() on that matrix; summary.lm() reads R²,
+## adjusted R², sigma and the standard errors off the fit.
+##
+## Consumed by (TypeScript port): src/core/linalg/modelMatrix.test.ts,
+##                                src/core/linalg/lm.test.ts
+
+cat("\n==== Section 4: model.matrix() and lm() ====\n")
+load("data/moderation_data.rda")
+
+report_mm <- function(label, formula, data) {
+  mm <- model.matrix(formula, data)
+  cat("\n---- ", label, " ----\n", sep = "")
+  cat("dim: ", nrow(mm), " x ", ncol(mm), "\n", sep = "")
+  cat("colnames: ", paste(colnames(mm), collapse = ", "), "\n", sep = "")
+  cat("assign: ", paste(attr(mm, "assign"), collapse = ", "), "\n", sep = "")
+  cat("row 1: ", fmtv(mm[1, ]), "\n", sep = "")
+  if (nrow(mm) > 1) cat("row n: ", fmtv(mm[nrow(mm), ]), "\n", sep = "")
+  cat("colSums: ", fmtv(colSums(mm)), "\n", sep = "")
+  invisible(mm)
+}
+
+report_lm <- function(label, formula, data, ...) {
+  fit <- lm(formula, data, ...)
+  s <- summary(fit)
+  cat("\n---- ", label, " ----\n", sep = "")
+  cat("coef names: ", paste(names(coef(fit)), collapse = ", "), "\n", sep = "")
+  cat("coef: ", fmtv(coef(fit)), "\n", sep = "")
+  cat("rank: ", fit$rank, "  df.residual: ", fit$df.residual, "\n", sep = "")
+  cat("fitted[1:5]: ", fmtv(head(fitted(fit), 5)), "\n", sep = "")
+  cat("residuals[1:5]: ", fmtv(head(residuals(fit), 5)), "\n", sep = "")
+  cat("length(fitted): ", length(fitted(fit)), "\n", sep = "")
+  cat("r.squared: ", fmt(s$r.squared), "  adj.r.squared: ", fmt(s$adj.r.squared), "  sigma: ", fmt(s$sigma), "\n", sep = "")
+  cm <- coef(s)
+  cat("summary rows: ", paste(rownames(cm), collapse = ", "), "\n", sep = "")
+  cat("std.error: ", fmtv(cm[, 2]), "\n", sep = "")
+  cat("t value: ", fmtv(cm[, 3]), "\n", sep = "")
+  cat("p value: ", fmtv(cm[, 4]), "\n", sep = "")
+  if (!is.null(s$fstatistic)) cat("fstatistic: ", fmtv(s$fstatistic), "\n", sep = "")
+  invisible(fit)
+}
+
+## 4a. The moderation model with a control: interactions come after every
+## main effect, w included.
+report_mm("4a model.matrix(y ~ x * z + w)", y ~ x * z + w, moderation_data)
+report_lm("4a lm(y ~ x * z + w)", y ~ x * z + w, moderation_data)
+
+## 4b. Shapes of the term list.
+report_mm("4b model.matrix(y ~ x + z - 1) no intercept", y ~ x + z - 1, moderation_data)
+report_mm("4b model.matrix(y ~ x:z) interaction only", y ~ x:z, moderation_data)
+report_mm("4b model.matrix(y ~ x:z + z) — main effect after its interaction", y ~ x:z + z, moderation_data)
+report_mm("4b model.matrix(y ~ x * z * w) three-way", y ~ x * z * w, moderation_data)
+report_lm("4b lm(y ~ x + z - 1)", y ~ x + z - 1, moderation_data)
+report_lm("4b lm(y ~ 1) intercept only", y ~ 1, moderation_data)
+
+## 4c. An aliased column: x2 = 2 x. Coefficient NA, rank 2.
+aliased <- data.frame(y = moderation_data$y, x = moderation_data$x, x2 = 2 * moderation_data$x)
+report_mm("4c model.matrix(y ~ x + x2)", y ~ x + x2, aliased)
+report_lm("4c lm(y ~ x + x2) aliased", y ~ x + x2, aliased)
+
+## 4d. Missing values: model.frame drops the row; na.exclude pads the fit.
+holed <- moderation_data
+holed$y[3] <- NA
+holed$x[5] <- NA
+report_mm("4d model.matrix with rows 3 and 5 incomplete", y ~ x * z, holed)
+report_lm("4d lm(y ~ x * z) na.omit", y ~ x * z, holed)
+fit_ex <- lm(y ~ x * z, holed, na.action = na.exclude)
+cat("\n---- 4d na.exclude padding ----\n")
+cat("fitted[1:6]: ", fmtv(head(fitted(fit_ex), 6)), "\n", sep = "")
+cat("residuals[1:6]: ", fmtv(head(residuals(fit_ex), 6)), "\n", sep = "")
+cat("length(fitted): ", length(fitted(fit_ex)), "\n", sep = "")
+
+## 4e. Agreement with the simple regression of regression.R: y ~ x.
+report_lm("4e lm(y ~ x)", y ~ x, moderation_data)
+
+## 4f. Errors.
+report_condition("4f a term naming an absent column", model.matrix(y ~ x + nope, moderation_data))
+report_condition("4f lm with every row incomplete", lm(y ~ x, data.frame(y = c(NA, NA), x = c(1, 2))))
