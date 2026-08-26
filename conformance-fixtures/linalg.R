@@ -295,3 +295,84 @@ probe("1h crossprod(matrix(1:6, 2), 1:2)", crossprod(matrix(1:6, 2), 1:2))
 probe("1h crossprod(1:2, matrix(1:6, 2))", crossprod(1:2, matrix(1:6, 2)))
 probe("1h crossprod(1:3, 1:2)", crossprod(1:3, 1:2))
 probe("1h crossprod(2, 1:3)", crossprod(2, 1:3))
+
+## ===========================================================================
+## Section 3 — LU: solve(), det(), rcond() for n x n
+## ===========================================================================
+##
+## R's solve() is LAPACK dgesv (dgetrf with partial pivoting, then dgetrs),
+## det() is dgetrf followed by a sum of logarithms of the diagonal, and
+## rcond() is dgecon's estimate. Matrix::lu() exposes the compact dgetrf
+## factorization (L below the unit diagonal, U on and above) and the pivot
+## vector, which lets a port pin the factorization itself.
+##
+## Consumed by (TypeScript port): src/core/linalg/lu.test.ts
+
+cat("\n==== Section 3: LU, solve, det, rcond ====\n")
+suppressMessages(library(Matrix))
+cat("LAPACK: ", La_version(), "\n", sep = "")
+
+report_lu <- function(label, A, b = NULL, B = NULL) {
+  cat("\n---- ", label, " ----\n", sep = "")
+  cat("A column-major: ", fmtv(as.vector(A)), "\n", sep = "")
+  cat("dim: ", nrow(A), " x ", ncol(A), "\n", sep = "")
+  l <- tryCatch(Matrix::lu(A), error = function(e) NULL)
+  if (!is.null(l)) {
+    cat("lu compact: ", fmtv(l@x), "\n", sep = "")
+    cat("lu perm (1-based ipiv): ", paste(l@perm, collapse = ", "), "\n", sep = "")
+  }
+  cat("det: ", fmt(det(A)), "\n", sep = "")
+  d <- determinant(A)
+  cat("determinant modulus (log): ", fmt(d$modulus), "  sign: ", d$sign, "\n", sep = "")
+  cat("norm(A, \"O\"): ", fmt(norm(A, "O")), "\n", sep = "")
+  inv <- tryCatch(solve(A), error = function(e) { cat("solve error: ", conditionMessage(e), "\n", sep = ""); NULL })
+  if (!is.null(inv)) {
+    cat("solve(A) column-major: ", fmtv(as.vector(inv)), "\n", sep = "")
+    dn <- dimnames(inv)
+    if (!is.null(dn)) cat("solve(A) rownames: ", paste(dn[[1]], collapse = ", "), "  colnames: ", paste(dn[[2]], collapse = ", "), "\n", sep = "")
+    cat("rcond(A, \"O\"): ", fmt(rcond(A, norm = "O")), "\n", sep = "")
+    cat("exact 1/(norm1(A) norm1(inv)): ", fmt(1 / (norm(A, "O") * norm(inv, "O"))), "\n", sep = "")
+    if (!is.null(b)) {
+      s <- solve(A, b)
+      cat("solve(A, b): ", fmtv(s), "\n", sep = "")
+      if (!is.null(names(s))) cat("solve(A, b) names: ", paste(names(s), collapse = ", "), "\n", sep = "")
+    }
+    if (!is.null(B)) {
+      s <- solve(A, B)
+      cat("solve(A, B) column-major: ", fmtv(as.vector(s)), "\n", sep = "")
+      dn <- dimnames(s)
+      if (!is.null(dn)) cat("solve(A, B) rownames: ", paste(dn[[1]], collapse = ", "), "  colnames: ", paste(dn[[2]], collapse = ", "), "\n", sep = "")
+    }
+  }
+  invisible(NULL)
+}
+
+S <- matrix(c(2, 1, -1, 1, 3, 2, 1, -1, 4), nrow = 3)
+report_lu("3a S, no interchange", S, b = c(1, 2, 3), B = matrix(c(1, 0, 0, 2, 1, 1), nrow = 3))
+
+P <- matrix(c(0, 1, 2, 3, 1, 0, 1, 4, 2), nrow = 3)
+report_lu("3b P, zero leading entry forces an interchange", P, b = c(1, 2, 3))
+
+M4 <- matrix(c(1.3, -0.7, 0.4, 1.9, 2.2, 0.5, -1.1, 0.8, -0.3, 1.6, 2.4, -0.9, 0.7, -1.2, 0.6, 1.5), nrow = 4)
+report_lu("3c M4, non-integer entries", M4, b = c(1, -1, 0.5, 2))
+
+X <- matrix(c(1, 2, 3, 4), nrow = 2, dimnames = list(c("r1", "r2"), c("a", "b")))
+report_lu("3d X with dimnames", X, b = c(1, 2), B = matrix(c(1, 0, 0, 1), nrow = 2, dimnames = list(NULL, c("p", "q"))))
+
+report_lu("3e 1 x 1", matrix(4), b = 2)
+
+Z <- matrix(c(1, 2, 3, 2, 4, 6, 1, 0, 1), nrow = 3)
+report_lu("3f Z, exactly singular (column 2 = 2 * column 1)", Z)
+
+Z2 <- matrix(c(1, 2, 3, 4, 5, 6, 7, 8, 9), nrow = 3)
+report_lu("3g Z2 = 1:9, singular in exact arithmetic", Z2)
+
+N <- matrix(c(1, 1, 1, 1, 1, 1 + 1e-15, 1, 1 + 1e-15, 1), nrow = 3)
+report_lu("3h N, near singular", N)
+
+report_lu("3i the default matrix-inverse fixture F1 (1, 2, 2, 1)", matrix(c(1, 2, 2, 1), nrow = 2))
+report_lu("3j F4a (-2, -1.6, -1.5, -1.2)", matrix(c(-2, -1.6, -1.5, -1.2), nrow = 2))
+
+report_condition("3k solve of a non-square matrix", solve(matrix(1:6, nrow = 2)))
+report_condition("3k solve(A, b) with b of the wrong length", solve(S, c(1, 2)))
+report_condition("3k det of a non-square matrix", det(matrix(1:6, nrow = 2)))
