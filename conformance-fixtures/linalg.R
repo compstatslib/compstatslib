@@ -461,3 +461,67 @@ report_lm("4e lm(y ~ x)", y ~ x, moderation_data)
 ## 4f. Errors.
 report_condition("4f a term naming an absent column", model.matrix(y ~ x + nope, moderation_data))
 report_condition("4f lm with every row incomplete", lm(y ~ x, data.frame(y = c(NA, NA), x = c(1, 2))))
+
+## ===========================================================================
+## Section 5 — cov(), cor(), eigen(symmetric = TRUE), prcomp()
+## ===========================================================================
+##
+## The covariance and correlation matrices of a frame, the symmetric
+## eigendecomposition R reaches through LAPACK's dsyevr, and prcomp(), which
+## R computes through the SVD of the centered data. Eigenvector signs are
+## LAPACK's; a port compares them up to sign.
+##
+## Consumed by (TypeScript port): src/core/linalg/eigen.test.ts,
+##                                src/core/linalg/prcomp.test.ts
+
+cat("\n==== Section 5: cov, cor, eigen, prcomp ====\n")
+load("data/pca_degenerate.rda")
+
+md <- as.matrix(moderation_data)
+report("5a cov(moderation_data)", cov(md))
+report("5a cor(moderation_data)", cor(md))
+cat("5a colMeans: ", fmtv(colMeans(md)), "\n", sep = "")
+
+report_eigen <- function(label, S) {
+  e <- eigen(S, symmetric = TRUE)
+  cat("\n---- ", label, " ----\n", sep = "")
+  cat("values: ", fmtv(e$values), "\n", sep = "")
+  cat("vectors column-major: ", fmtv(as.vector(e$vectors)), "\n", sep = "")
+  cat("check |S v - lambda v| max: ", fmt(max(abs(S %*% e$vectors - e$vectors %*% diag(e$values, nrow = length(e$values))))), "\n", sep = "")
+  invisible(e)
+}
+report_eigen("5b eigen(cov(moderation_data))", cov(md))
+report_eigen("5b eigen 2 x 2 [[2, 1], [1, 2]]", matrix(c(2, 1, 1, 2), 2))
+report_eigen("5b eigen diagonal, unsorted input", diag(c(1, 3, 2)))
+report_eigen("5b eigen 1 x 1", matrix(5))
+report_eigen("5b eigen of a rank-1 matrix", tcrossprod(c(1, 2, 3)))
+report_eigen("5b eigen with a repeated eigenvalue", diag(2))
+report_condition("5b eigen(symmetric = TRUE) on a non-symmetric matrix silently uses the lower triangle",
+                 report("5b lower triangle of [[1, 9], [2, 1]]", eigen(matrix(c(1, 2, 9, 1), 2), symmetric = TRUE)$values))
+
+report_prcomp <- function(label, x, ...) {
+  p <- prcomp(x, ...)
+  cat("\n---- ", label, " ----\n", sep = "")
+  cat("sdev: ", fmtv(p$sdev), "\n", sep = "")
+  cat("center: ", fmtv(p$center), "\n", sep = "")
+  cat("scale: ", if (isFALSE(p$scale)) "FALSE" else fmtv(p$scale), "\n", sep = "")
+  cat("rotation dim: ", nrow(p$rotation), " x ", ncol(p$rotation), "\n", sep = "")
+  cat("rotation rownames: ", paste(rownames(p$rotation), collapse = ", "), "  colnames: ", paste(colnames(p$rotation), collapse = ", "), "\n", sep = "")
+  cat("rotation column-major: ", fmtv(as.vector(p$rotation)), "\n", sep = "")
+  cat("x[1:3, ] column-major: ", fmtv(as.vector(p$x[1:min(3, nrow(p$x)), , drop = FALSE])), "\n", sep = "")
+  cat("x dim: ", nrow(p$x), " x ", ncol(p$x), "\n", sep = "")
+  invisible(p)
+}
+report_prcomp("5c prcomp(moderation_data)", md)
+report_prcomp("5c prcomp(moderation_data, scale. = TRUE)", md, scale. = TRUE)
+report_prcomp("5c prcomp(pca_degenerate)", as.matrix(pca_degenerate))
+report_prcomp("5c prcomp(pca_degenerate, center = FALSE)", as.matrix(pca_degenerate), center = FALSE)
+
+## 5d. cov()/cor() on vectors and with a missing value.
+cat("\n---- 5d cov and cor of two vectors ----\n")
+cat("cov(x, z): ", fmt(cov(moderation_data$x, moderation_data$z)), "\n", sep = "")
+cat("cor(x, z): ", fmt(cor(moderation_data$x, moderation_data$z)), "\n", sep = "")
+cat("var(x): ", fmt(var(moderation_data$x)), "\n", sep = "")
+report_condition("5d cov with an NA", cov(c(1, 2, NA), c(2, 4, 6)))
+report_condition("5d cor of a constant", cor(c(1, 1, 1), c(1, 2, 3)))
+report_condition("5d cov of one observation", cov(matrix(c(1, 2), 1)))
