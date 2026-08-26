@@ -209,3 +209,89 @@ report_qr("2g qr(cbind(x, 0)), y — zero column", cbind(x, 0), y)
 ## 2h. Errors.
 report_condition("2h qr.coef with y of the wrong length", qr.coef(q1, c(1, 2, 3)))
 report_condition("2h qr() of a 0-row matrix", qr(matrix(numeric(0), nrow = 0, ncol = 2)))
+
+## ---------------------------------------------------------------------------
+## 1g. Added after review of the port's first slice: how a bare vector
+## conforms in a product, silent recycling in matrix(), zero extents, diag()
+## on a length-1 vector, and the vector wording of cbind()/rbind().
+## ---------------------------------------------------------------------------
+
+cat("\n==== Section 1g: vector promotion, recycling, zero extents ====\n")
+
+## A vector on either side of %*% takes whichever shape conforms: as a row
+## when its length matches the rows of the right factor, as a column when the
+## right factor has one row (the outer product); mirrored on the right.
+report("1g c(1, 2) %*% B — row", c(1, 2) %*% B)
+report("1g c(1, 2, 3) %*% A — row", c(1, 2, 3) %*% A)
+report("1g c(1, 2, 3) %*% matrix(1:4, nrow = 1) — column, outer", c(1, 2, 3) %*% matrix(1:4, nrow = 1))
+report("1g matrix(1:3, 3) %*% c(10, 20) — row, outer", matrix(1:3, 3) %*% c(10, 20))
+report("1g matrix(2) %*% 1:3 — row", matrix(2) %*% 1:3)
+report("1g 1:3 %*% 1:3 — inner product", 1:3 %*% 1:3)
+report("1g 2 %*% 1:3 — scalar times row", 2 %*% 1:3)
+report_condition("1g c(1, 2) %*% A", c(1, 2) %*% A)
+report_condition("1g 1:3 %*% 1:2", 1:3 %*% 1:2)
+report_condition("1g 1:3 %*% 2", 1:3 %*% 2)
+
+## crossprod takes a vector as a column when that conforms, else as a row;
+## tcrossprod takes it as a row when that conforms, else as a column.
+report("1g crossprod(1:3)", crossprod(1:3))
+report("1g crossprod(c(1, 2, 3), A)", crossprod(c(1, 2, 3), A))
+report("1g crossprod(X, Y)", crossprod(X, Y))
+report("1g tcrossprod(1:3)", tcrossprod(1:3))
+report("1g tcrossprod(matrix(1:3, 1), 1:3)", tcrossprod(matrix(1:3, 1), 1:3))
+report("1g tcrossprod(matrix(1:3, 3), 1:3)", tcrossprod(matrix(1:3, 3), 1:3))
+report("1g tcrossprod(1:2, A)", tcrossprod(1:2, A))
+report_condition("1g crossprod(c(1, 2), A)", crossprod(c(1, 2), A))
+report_condition("1g crossprod(A, c(1, 2))", crossprod(A, c(1, 2)))
+report_condition("1g tcrossprod(A, 1:2)", tcrossprod(A, 1:2))
+
+## matrix() recycles a scalar, and a sub-multiple, with no warning at all.
+## The port recycles the scalar only.
+report_condition("1g matrix(0, 3, 3) — no warning", report("1g matrix(0, 3, 3)", matrix(0, 3, 3)))
+report_condition("1g matrix(7, nrow = 2) — no warning", report("1g matrix(7, nrow = 2)", matrix(7, nrow = 2)))
+report_condition("1g matrix(1:3, 3, 2) — no warning", report("1g matrix(1:3, 3, 2)", matrix(1:3, 3, 2)))
+
+## Zero extents are legal.
+cat("\n---- 1g zero extents ----\n")
+cat("dim(matrix(numeric(0), nrow = 0)): ", paste(dim(matrix(numeric(0), nrow = 0)), collapse = " x "), "\n", sep = "")
+cat("dim(matrix(numeric(0), nrow = 0, ncol = 3)): ", paste(dim(matrix(numeric(0), nrow = 0, ncol = 3)), collapse = " x "), "\n", sep = "")
+cat("dim(matrix(numeric(0), ncol = 0)): ", paste(dim(matrix(numeric(0), ncol = 0)), collapse = " x "), "\n", sep = "")
+cat("dim(diag(0)): ", paste(dim(diag(0)), collapse = " x "), "\n", sep = "")
+report_condition("1g matrix(1:2, nrow = 0)", matrix(1:2, nrow = 0))
+
+## diag() reads a length-1 vector as a count and truncates a fraction. The
+## port dispatches on type instead: diag([5]) is 1 x 1, and diag(2.5) refuses.
+report("1g diag(c(5)) — R's gotcha", diag(c(5)))
+report("1g diag(2.5) — truncates", diag(2.5))
+report("1g diag() of a matrix with matching names", diag(matrix(1:4, 2, dimnames = list(c("r1", "r2"), c("r1", "r2")))))
+
+## The vector wording of a cbind/rbind mismatch.
+report_condition("1g cbind(matrix(1:4, 2), 1:3)", cbind(matrix(1:4, 2), 1:3))
+report_condition("1g rbind(matrix(1:4, 2), 1:3)", rbind(matrix(1:4, 2), 1:3))
+
+## 1h. The full vector-conformity rules of crossprod() and tcrossprod(),
+## probed on the shapes that tell the candidate rules apart. Read from
+## these: in crossprod a vector x is always a column, and a vector y is a
+## column when its length matches the rows of x, else a row; in tcrossprod a
+## vector x is a row when its length matches the columns of a matrix y, else
+## a column, and a vector y is a row only when x has one row; two vectors
+## are both columns.
+cat("\n==== Section 1h: crossprod/tcrossprod vector conformity ====\n")
+probe <- function(label, expr) report_condition(label, report(label, expr))
+probe("1h tcrossprod(matrix(2), 1:3)", tcrossprod(matrix(2), 1:3))
+probe("1h tcrossprod(matrix(1:2, 2), 1:2)", tcrossprod(matrix(1:2, 2), 1:2))
+probe("1h tcrossprod(matrix(1:2, 1), 1:2)", tcrossprod(matrix(1:2, 1), 1:2))
+probe("1h tcrossprod(1:2, matrix(1:2, 2))", tcrossprod(1:2, matrix(1:2, 2)))
+probe("1h tcrossprod(1:2, matrix(1:2, 1))", tcrossprod(1:2, matrix(1:2, 1)))
+probe("1h tcrossprod(1:3, matrix(1:6, 2))", tcrossprod(1:3, matrix(1:6, 2)))
+probe("1h tcrossprod(1:2, matrix(1:6, 2))", tcrossprod(1:2, matrix(1:6, 2)))
+probe("1h tcrossprod(matrix(1:6, 3), 1:2)", tcrossprod(matrix(1:6, 3), 1:2))
+probe("1h tcrossprod(matrix(1:6, 2), 1:3)", tcrossprod(matrix(1:6, 2), 1:3))
+probe("1h tcrossprod(1:3, 1:2)", tcrossprod(1:3, 1:2))
+probe("1h tcrossprod(2, 1:3)", tcrossprod(2, 1:3))
+probe("1h crossprod(matrix(1:3, 1), 1:3)", crossprod(matrix(1:3, 1), 1:3))
+probe("1h crossprod(1:3, matrix(1:3, 1))", crossprod(1:3, matrix(1:3, 1)))
+probe("1h crossprod(matrix(1:6, 2), 1:2)", crossprod(matrix(1:6, 2), 1:2))
+probe("1h crossprod(1:2, matrix(1:6, 2))", crossprod(1:2, matrix(1:6, 2)))
+probe("1h crossprod(1:3, 1:2)", crossprod(1:3, 1:2))
+probe("1h crossprod(2, 1:3)", crossprod(2, 1:3))
