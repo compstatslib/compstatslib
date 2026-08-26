@@ -130,3 +130,82 @@ report_condition("1f rbind columns differ", rbind(matrix(1:4, 2), matrix(1:6, 2)
 report_condition("1f matrix(1:5, nrow = 2) — R warns and recycles", matrix(1:5, nrow = 2))
 report_condition("1f a + c(1, 2, 3) — R warns and recycles", a + c(1, 2, 3))
 report_condition("1f cbind(X, c(9, 8, 7)) — R warns and recycles", cbind(X, c(9, 8, 7)))
+
+## ===========================================================================
+## Section 2 — qr(): the compact factorization lm.fit() runs on
+## ===========================================================================
+##
+## `qr(x, LAPACK = FALSE)` is LINPACK's dqrdc2, the Householder QR with the
+## limited column pivoting that lets lm.fit() report an aliased coefficient
+## as NA. The port already reproduces it inside its least-squares solver;
+## this section pins the factorization itself — the compact `qr` matrix,
+## `qraux`, `pivot` and `rank` — and the readers qr.Q, qr.R, qr.coef,
+## qr.fitted and qr.resid, so the port can expose them by name.
+##
+## Consumed by (TypeScript port): src/core/linalg/qr.test.ts
+
+cat("\n==== Section 2: qr() ====\n")
+
+report_qr <- function(label, x, y = NULL, tol = 1e-07) {
+  q <- qr(x, tol = tol)
+  cat("\n---- ", label, " ----\n", sep = "")
+  cat("rank: ", q$rank, "\n", sep = "")
+  cat("pivot: ", paste(q$pivot, collapse = ", "), "\n", sep = "")
+  cat("qraux: ", fmtv(q$qraux), "\n", sep = "")
+  cat("qr dim: ", nrow(q$qr), " x ", ncol(q$qr), "\n", sep = "")
+  cat("qr column-major: ", fmtv(as.vector(q$qr)), "\n", sep = "")
+  if (!is.null(y)) {
+    cat("coef: ", fmtv(qr.coef(q, y)), "\n", sep = "")
+    cat("fitted: ", fmtv(qr.fitted(q, y)), "\n", sep = "")
+    cat("resid: ", fmtv(qr.resid(q, y)), "\n", sep = "")
+  }
+  invisible(q)
+}
+
+x <- c(1, 3, 5, 8)
+y <- c(2, 4, 6, 8)
+
+## 2a. Full rank, n > p: the ordinary regression design.
+q1 <- report_qr("2a qr(cbind(1, x)), y", cbind(1, x), y)
+report("2a qr.Q", qr.Q(q1))
+report("2a qr.R", qr.R(q1))
+report("2a qr.Q %*% qr.R recovers X", qr.Q(q1) %*% qr.R(q1))
+report("2a crossprod(qr.Q) is I", crossprod(qr.Q(q1)))
+
+## 2b. Rank deficient: a duplicated column is pivoted to the end and its
+## coefficient is NA, in the ORIGINAL column order.
+report_qr("2b qr(cbind(1, 1, x)), y — duplicate column", cbind(1, 1, x), y)
+
+## 2c. Wide: more columns than rows. The last row is never reflected.
+report_qr("2c qr(matrix(c(1, 10), nrow = 1)), y = 3", matrix(c(1, 10), nrow = 1), 3)
+
+## 2d. Square, full rank.
+S <- matrix(c(2, 1, -1, 1, 3, 2, 1, -1, 4), nrow = 3)
+q4 <- report_qr("2d qr(S) 3 x 3, y = c(1, 2, 3)", S, c(1, 2, 3))
+report("2d qr.Q", qr.Q(q4))
+report("2d qr.R", qr.R(q4))
+cat("2d solve(S, c(1, 2, 3)) agrees: ", fmtv(solve(S, c(1, 2, 3))), "\n", sep = "")
+
+## 2e. The moderation-shaped design from ols.R, with dimnames on the design so
+## the coefficient names travel.
+z <- c(2, 5, 1, 9, 4, 6)
+xx <- c(1, 2, 3, 4, 5, 6)
+yy <- c(3.1, 4.4, 2.2, 9.9, 5.5, 7.7)
+M <- cbind("(Intercept)" = 1, xx = xx, z = z, "xx:z" = xx * z)
+q5 <- report_qr("2e qr(M) moderation shaped, yy", M, yy)
+cat("2e names(qr.coef): ", paste(names(qr.coef(q5, yy)), collapse = ", "), "\n", sep = "")
+cat("2e colnames(qr$qr): ", paste(colnames(q5$qr), collapse = ", "), "\n", sep = "")
+report("2e qr.R keeps column names", qr.R(q5))
+
+## 2f. Near collinear at both tolerances, as ols.R does for lm.fit.
+X_near <- cbind(1, c(1, 1, 1, 1 + 1e-8))
+report_qr("2f qr(X_near), tol = 1e-7", X_near, y, tol = 1e-07)
+report_qr("2f qr(X_near), tol = 1e-11", X_near, y, tol = 1e-11)
+
+## 2g. An all-zero column: its norm is 0, R substitutes 1 for the comparison
+## and aliases it.
+report_qr("2g qr(cbind(x, 0)), y — zero column", cbind(x, 0), y)
+
+## 2h. Errors.
+report_condition("2h qr.coef with y of the wrong length", qr.coef(q1, c(1, 2, 3)))
+report_condition("2h qr() of a 0-row matrix", qr(matrix(numeric(0), nrow = 0, ncol = 2)))
