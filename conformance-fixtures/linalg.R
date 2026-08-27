@@ -623,3 +623,21 @@ cat("5e prcomp center names: ", paste(names(pn$center), collapse = ", "), "\n", 
 report("5e prcomp(named_rows) sdev", pn$sdev)
 report("5e prcomp(named_rows) rotation", pn$rotation)
 report("5e prcomp(named_rows) x", pn$x)
+
+## ---------------------------------------------------------------------------
+## 4h. The moderation demo's own model, y ~ x * z, fitted through lm(). The
+## port's `moderationSurface` reads its fit from the same routine, so these
+## are the values it has to reproduce. R's residuals are dqrsl's and its
+## fitted values are y minus them, which is why the two do not satisfy
+## `residuals == y - fitted` exactly.
+## ---------------------------------------------------------------------------
+
+cat("\n==== Section 4h: lm(y ~ x * z, moderation_data) ====\n")
+m1 <- lm(y ~ x * z, moderation_data)
+report("4h coefficients", coef(m1))
+cat("4h fitted[1:5]: ", fmtv(head(fitted(m1), 5)), "\n", sep = "")
+cat("4h residuals[1:5]: ", fmtv(head(residuals(m1), 5)), "\n", sep = "")
+cat("4h rows where residuals(m1) != y - fitted(m1): ",
+    sum(residuals(m1) != moderation_data$y - fitted(m1)), " of ", nrow(moderation_data), "\n", sep = "")
+cat("4h max |residuals(m1) - (y - fitted(m1))|: ",
+    fmt(max(abs(residuals(m1) - (moderation_data$y - fitted(m1))))), "\n", sep = "")
