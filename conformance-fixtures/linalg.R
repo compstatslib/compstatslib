@@ -577,3 +577,49 @@ report_condition("3l F5 (1, 1, 1, 1) exactly singular", solve(matrix(c(1, 1, 1, 
 cat("3l det(F5): ", fmt(det(matrix(c(1, 1, 1, 1), 2))), "\n", sep = "")
 report_condition("3l solve with an Inf entry", report("3l solve([[Inf, 1], [1, 1]])", solve(matrix(c(Inf, 1, 1, 1), 2))))
 report_condition("3l rcond with a NaN entry", rcond(matrix(c(1, 1, NaN, 1), 2)))
+
+## ---------------------------------------------------------------------------
+## 4g and 5e. Added after review of the port's lm and eigen slices: a
+## saturated fit with no residual degrees of freedom, a fit with no
+## intercept, and the inputs eigen() and prcomp() refuse.
+## ---------------------------------------------------------------------------
+
+cat("\n==== Section 4g: lm at the edges of the residual degrees of freedom ====\n")
+sat <- data.frame(y = c(1, 3, 2), x = c(1, 2, 3), z = c(2, 1, 4))
+fs <- lm(y ~ x + z, sat)
+ss <- summary(fs)
+report("4g saturated lm(y ~ x + z) coefficients", coef(fs))
+cat("4g rank: ", fs$rank, "  df.residual: ", fs$df.residual, "\n", sep = "")
+cat("4g sigma: ", fmt(ss$sigma), "  r.squared: ", fmt(ss$r.squared), "  adj.r.squared: ", fmt(ss$adj.r.squared), "\n", sep = "")
+cat("4g std errors: ", fmtv(coef(ss)[, "Std. Error"]), "\n", sep = "")
+cat("4g fstatistic: ", fmtv(ss$fstatistic), "\n", sep = "")
+report("4g saturated residuals", residuals(fs))
+
+noint <- lm(y ~ x - 1, moderation_data)
+sn <- summary(noint)
+report("4g lm(y ~ x - 1) coefficients", coef(noint))
+cat("4g no-intercept r.squared: ", fmt(sn$r.squared), "  adj: ", fmt(sn$adj.r.squared), "  sigma: ", fmt(sn$sigma), "\n", sep = "")
+cat("4g no-intercept fstatistic: ", fmtv(sn$fstatistic), "\n", sep = "")
+
+onlyint <- lm(y ~ 1, moderation_data)
+so <- summary(onlyint)
+report("4g lm(y ~ 1) coefficients", coef(onlyint))
+cat("4g intercept-only r.squared: ", fmt(so$r.squared), "  adj: ", fmt(so$adj.r.squared), "  sigma: ", fmt(so$sigma), "  fstatistic is NULL: ", is.null(so$fstatistic), "\n", sep = "")
+
+cat("\n==== Section 5e: eigen() and prcomp() refusals, prcomp row names ====\n")
+report_condition("5e eigen with an NA entry", eigen(matrix(c(NA, 1, 1, 1), 2), symmetric = TRUE))
+report_condition("5e eigen with an Inf entry", eigen(matrix(c(Inf, 1, 1, 1), 2), symmetric = TRUE))
+report_condition("5e eigen of a 0 x 0 matrix", eigen(matrix(numeric(0), 0, 0), symmetric = TRUE))
+report_condition("5e prcomp with an NA entry", prcomp(matrix(c(NA, 1, 2, 3, 4, 5), 3, 2)))
+report_condition("5e prcomp of a constant column with scale. = TRUE", prcomp(matrix(c(1, 1, 1, 1, 2, 3), 3, 2), scale. = TRUE))
+
+named_rows <- matrix(c(1, 2, 3, 4, 5, 6, 2, 1, 4, 3, 6, 5), 6, 2,
+                     dimnames = list(c("o1", "o2", "o3", "o4", "o5", "o6"), c("a", "b")))
+pn <- prcomp(named_rows)
+cat("5e prcomp x rownames: ", paste(rownames(pn$x), collapse = ", "), "\n", sep = "")
+cat("5e prcomp x colnames: ", paste(colnames(pn$x), collapse = ", "), "\n", sep = "")
+cat("5e prcomp rotation rownames: ", paste(rownames(pn$rotation), collapse = ", "), "\n", sep = "")
+cat("5e prcomp center names: ", paste(names(pn$center), collapse = ", "), "\n", sep = "")
+report("5e prcomp(named_rows) sdev", pn$sdev)
+report("5e prcomp(named_rows) rotation", pn$rotation)
+report("5e prcomp(named_rows) x", pn$x)
