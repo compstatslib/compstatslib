@@ -9,8 +9,8 @@
 #
 # Consumed by (TypeScript port, compstatslib-ts):
 #   src/core/linalg/matrix.test.ts   (section 1)
-#   src/core/linalg/ops.test.ts      (section 1)
-#   src/core/linalg/vector.test.ts   (section 1)
+#   src/core/linalg/ops.test.ts      (sections 1, 9)
+#   src/core/linalg/vector.test.ts   (sections 1, 9)
 #   src/core/linalg/cov.test.ts      (sections 5, 6)
 #   src/core/linalg/scale.test.ts    (section 6)
 #   src/core/linalg/chol.test.ts     (section 7)
@@ -920,3 +920,88 @@ cat("8g rows where predict(f4h) != fitted(f4h): ",
     sum(predict(f4h) != fitted(f4h)), " of ", nrow(moderation_data), "\n", sep = "")
 cat("8g max |predict(f4h) - fitted(f4h)|: ",
     fmt(max(abs(predict(f4h) - fitted(f4h)))), "\n", sep = "")
+
+## ===========================================================================
+## Section 9 — elementwise arithmetic and outer()
+## ===========================================================================
+##
+## R gives `+`, `-`, `*` and `/` on two matrices of the same extents. Each
+## operator works entry by entry. `*` is the elementwise product and not the
+## matrix product, which is `%*%`. A number on either side applies to every
+## entry. R keeps the dimnames of the first operand when that operand has
+## any, and takes the dimnames of the second operand otherwise.
+##
+## R recycles a vector against a matrix in silence when the length of the
+## vector divides the entry count. R warns only when the length does not
+## divide it. The port refuses every vector beside a matrix, so these cases
+## record a stated narrowing and not a behavior to copy.
+##
+## outer(x, y) multiplies every entry of x by every entry of y. The result
+## has length(x) rows and length(y) columns, and it equals tcrossprod(x, y).
+## R names the rows and the columns of the result from the names of the two
+## vectors. The port's vectors carry no names, so its outer() returns a
+## matrix with no dimnames.
+##
+## Consumed by (TypeScript port): src/core/linalg/vector.test.ts,
+##                                src/core/linalg/ops.test.ts
+
+cat("\n==== Section 9: elementwise arithmetic and outer ====\n")
+
+## 9a. Two matrices of exact binary fractions. Every entry of the result is
+## one operation on one pair of doubles, so a port can pin the bits.
+A9 <- matrix(c(1, 2, 3, 4, 5, 6), 3)
+B9 <- matrix(c(0.5, -1, 2, 0.25, 4, -8), 3)
+report("9a A", A9)
+report("9a B", B9)
+report("9a A + B", A9 + B9)
+report("9a A - B", A9 - B9)
+report("9a A * B", A9 * B9)
+report("9a A / B", A9 / B9)
+
+## 9b. A number on either side. The number reaches every entry. The order of
+## the two operands matters for the operators that do not commute.
+report("9b A + 2", A9 + 2)
+report("9b A * 0.5", A9 * 0.5)
+report("9b A / 4", A9 / 4)
+report("9b 2 - A", 2 - A9)
+
+## 9c. Dimnames. The first operand that carries dimnames gives them to the
+## result. A number carries none, so the matrix keeps its own.
+N1 <- A9
+dimnames(N1) <- list(c("r1", "r2", "r3"), c("a", "b"))
+N2 <- B9
+dimnames(N2) <- list(c("p", "q", "s"), c("u", "v"))
+report("9c N1", N1)
+report("9c N2", N2)
+report("9c N1 + N2 keeps the names of N1", N1 + N2)
+report("9c N1 + B takes the names of N1", N1 + B9)
+report("9c A + N2 takes the names of N2", A9 + N2)
+report("9c N1 + 2 keeps the names of N1", N1 + 2)
+
+## 9d. Two matrices of different extents.
+report_condition("9d matrix(1:6, 3) + matrix(1:6, 2)",
+                 matrix(1:6, 3) + matrix(1:6, 2))
+
+## 9e. A vector beside a matrix. R recycles the vector down the column-major
+## order and says nothing when the length divides the entry count. R warns
+## when the length does not divide it, and it still returns a result. The
+## port refuses all three of these calls.
+report("9e matrix(1:6, 3) + 1:3", matrix(1:6, 3) + 1:3)
+report("9e matrix(1:6, 3) + 1:2", matrix(1:6, 3) + 1:2)
+report_condition("9e matrix(1:6, 3) + 1:4, a length that does not divide 6",
+                 report("9e matrix(1:6, 3) + 1:4", matrix(1:6, 3) + 1:4))
+
+## 9f. outer() of two unnamed vectors, and its agreement with tcrossprod().
+report("9f outer(1:3, c(0.5, 2))", outer(1:3, c(0.5, 2)))
+report("9f outer(c(-1, 2), c(3, 4, 5))", outer(c(-1, 2), c(3, 4, 5)))
+cat("9f identical(outer(1:3, c(0.5, 2)), tcrossprod(1:3, c(0.5, 2))): ",
+    identical(outer(1:3, c(0.5, 2)), tcrossprod(1:3, c(0.5, 2))), "\n", sep = "")
+cat("9f identical(outer(c(-1, 2), c(3, 4, 5)), tcrossprod(c(-1, 2), c(3, 4, 5))): ",
+    identical(outer(c(-1, 2), c(3, 4, 5)), tcrossprod(c(-1, 2), c(3, 4, 5))), "\n", sep = "")
+
+## 9g. outer() of two named vectors. R takes the row names from x and the
+## column names from y. The port's Vector carries no names, so its outer()
+## returns no dimnames and a caller who wants them sets them afterward.
+a9 <- c(x = 1, y = 2)
+b9 <- c(u = 3, v = 4, w = 5)
+report("9g outer(c(x = 1, y = 2), c(u = 3, v = 4, w = 5))", outer(a9, b9))
