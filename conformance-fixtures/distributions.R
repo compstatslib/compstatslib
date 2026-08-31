@@ -343,3 +343,50 @@ for (p in c(0.025, 0.5, 0.975)) {
 for (z in c(6, 10, 13.5)) {
   val(paste0("pnorm(", z, ", mean = 10, sd = 2)"), pnorm(z, mean = 10, sd = 2))
 }
+
+## ===========================================================================
+## Section 5 — qnorm() below the reach of AS 241
+## ===========================================================================
+##
+## Wichura's AS 241 covers a smaller tail down to about 2.5e-317, which is
+## r = sqrt(-log(p)) of 27. A double goes further: the subnormals run to
+## 4.9406564584124654e-324, where r reaches 27.284. Section 4's grid stops at
+## 1e-300 (r = 26.28), so nothing there crosses the boundary.
+##
+## R does not stop at 27. `qnorm.c` closes the gap with an asymptotic
+## expansion of Maechler (2022), which solves x^2 = 2s - log(2 pi x^2) for
+## s = -log(p), refined by one further term for each step inward. The
+## thresholds below (r < 36000, 840, 109, 55) choose how many terms to take.
+## Every probability in this section is an ordinary argument a caller can
+## pass, so a port that implements only the published AS 241 returns a wrong
+## number here rather than an error.
+##
+## Consumed by (TypeScript port): src/core/norm.test.ts
+
+cat("\n==== Section 5: qnorm() below the reach of AS 241 ====\n")
+
+## 5a. Either side of the r = 27 boundary. The first two still fall to AS 241's
+## third region; the rest reach the asymptotic branch.
+sub_grid <- c(1e-310, 2.4e-317, 1e-318, 1e-320, 1e-322, 5e-324)
+
+cat("\n---- 5a p grid (exact doubles) ----\n")
+cat("p grid: ", fmtv(sub_grid), "\n", sep = "")
+cat("r = sqrt(-log(p)): ", fmtv(sqrt(-log(sub_grid))), "\n", sep = "")
+
+cat("\n---- 5b qnorm on the subnormal tail ----\n")
+for (p in sub_grid) {
+  val(paste0("qnorm(", fmt(p), ")"), qnorm(p))
+}
+
+## 5c. The upper tail of the same probabilities, which R reflects.
+cat("\n---- 5c upper tail ----\n")
+for (p in sub_grid) {
+  val(paste0("qnorm(", fmt(p), ", lower.tail = FALSE)"), qnorm(p, lower.tail = FALSE))
+}
+
+## 5d. The round trip. pnorm of the quantile returns the probability to
+## within the resolution a subnormal still carries.
+cat("\n---- 5d pnorm(qnorm(p)) round trip ----\n")
+for (p in sub_grid) {
+  val(paste0("pnorm(qnorm(", fmt(p), "))"), pnorm(qnorm(p)))
+}

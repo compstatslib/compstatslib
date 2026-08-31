@@ -35,7 +35,7 @@ a dataset from `data/`, so the working directory must be the package root.
 | `matrix-inverse.R` | `plot_matrix_inverse()`: `solve()`, both singularity failures, colours, draw order |
 | `moderation.R` | `plot_moderation_3d()` and `plot_scatter3d()`: fits, prediction grid, validation, the `moderation_data` export |
 | `linalg.R` | Base-R linear algebra a port must write itself: `matrix()`, `t()`, `%*%`, `crossprod()`, `cbind()`/`rbind()`, `diag()`, vector arithmetic, `qr()`, `solve()`, `model.matrix()`/`lm()`, `cov()`/`cor()`, `eigen()`, `prcomp()`, `scale()`, `chol()`/`chol2inv()`, `predict.lm()` (contributed by the TypeScript port) |
-| `distributions.R` | Base-R distributions a port must write itself: `pchisq()` central and non-central, `qchisq()`, `pnorm()`, `qnorm()` (contributed by the TypeScript port) |
+| `distributions.R` | Base-R distributions a port must write itself: `pchisq()` central and non-central, `qchisq()`, `pnorm()`, `qnorm()`, and `qnorm()` on the subnormal tail below the reach of AS 241 (contributed by the TypeScript port) |
 | `optim.R` | `optim(method = "BFGS")`: Rosenbrock, a convex quadratic, a logistic maximum-likelihood fit, a stationary start, an unknown method (contributed by the TypeScript port) |
 
 `ols.R` is not a function family. It covers the solver that the regression
