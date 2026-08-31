@@ -34,7 +34,9 @@ a dataset from `data/`, so the working directory must be the package root.
 | `pca.R` | `plot_pca()`: `prcomp()` and the arrow geometry, plus the `pca_degenerate` dump |
 | `matrix-inverse.R` | `plot_matrix_inverse()`: `solve()`, both singularity failures, colours, draw order |
 | `moderation.R` | `plot_moderation_3d()` and `plot_scatter3d()`: fits, prediction grid, validation, the `moderation_data` export |
-| `linalg.R` | Base-R linear algebra a port must write itself: `matrix()`, `t()`, `%*%`, `crossprod()`, `cbind()`/`rbind()`, `diag()`, vector arithmetic (contributed by the TypeScript port) |
+| `linalg.R` | Base-R linear algebra a port must write itself: `matrix()`, `t()`, `%*%`, `crossprod()`, `cbind()`/`rbind()`, `diag()`, vector arithmetic, `qr()`, `solve()`, `model.matrix()`/`lm()`, `cov()`/`cor()`, `eigen()`, `prcomp()`, `scale()`, `chol()`/`chol2inv()`, `predict.lm()` (contributed by the TypeScript port) |
+| `distributions.R` | Base-R distributions a port must write itself: `pchisq()` central and non-central, `qchisq()`, `pnorm()`, `qnorm()` (contributed by the TypeScript port) |
+| `optim.R` | `optim(method = "BFGS")`: Rosenbrock, a convex quadratic, a logistic maximum-likelihood fit, a stationary start, an unknown method (contributed by the TypeScript port) |
 
 `ols.R` is not a function family. It covers the solver that the regression
 line, every IRLS step of the logit fit and the moderation surface all run on,

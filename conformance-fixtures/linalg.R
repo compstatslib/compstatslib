@@ -11,8 +11,16 @@
 #   src/core/linalg/matrix.test.ts   (section 1)
 #   src/core/linalg/ops.test.ts      (section 1)
 #   src/core/linalg/vector.test.ts   (section 1)
+#   src/core/linalg/cov.test.ts      (sections 5, 6)
+#   src/core/linalg/scale.test.ts    (section 6)
+#   src/core/linalg/chol.test.ts     (section 7)
+#   src/core/linalg/lm.test.ts       (sections 4, 8)
 #
 # Verified under: R 4.5.3 (2026-03-11), arm64 macOS with R's reference BLAS.
+# That build contracts each multiply-add into one rounding. The TypeScript
+# port's default arithmetic does the same, so its factorizations pin these
+# values bit for bit; its `{ fma: false }` option rounds twice and lands a few
+# units in the last place away.
 #
 # Re-run with: Rscript conformance-fixtures/linalg.R   (from the package root)
 #
@@ -641,3 +649,274 @@ cat("4h rows where residuals(m1) != y - fitted(m1): ",
     sum(residuals(m1) != moderation_data$y - fitted(m1)), " of ", nrow(moderation_data), "\n", sep = "")
 cat("4h max |residuals(m1) - (y - fitted(m1))|: ",
     fmt(max(abs(residuals(m1) - (moderation_data$y - fitted(m1))))), "\n", sep = "")
+
+## ===========================================================================
+## Section 6 — cov(x, y) and cor(x, y) over two matrices, and scale()
+## ===========================================================================
+##
+## cov() and cor() take a second matrix. They then return the cross
+## covariance or the cross correlation of every column of x against every
+## column of y. The result carries the column names of x as its row names
+## and the column names of y as its column names. A vector counts as one
+## column, so a vector against a two-column matrix gives a 1 x 2 result.
+##
+## scale() centers each column, then divides it. It reports the values it
+## used in the attributes "scaled:center" and "scaled:scale". An attribute is
+## absent when its argument was FALSE. R prints NaN for a column of zero
+## variance, and fmt() above prints NaN as NA, so each scale case also lists
+## the column-major indices of its NaN entries.
+##
+## Consumed by (TypeScript port): src/core/linalg/cov.test.ts,
+##                                src/core/linalg/scale.test.ts
+
+cat("\n==== Section 6: two-matrix cov and cor, scale ====\n")
+
+md <- as.matrix(moderation_data)
+
+## 6a. Two matrices from the bundled data. Rows come from x, columns from y.
+report("6a cov(md[, c(\"x\", \"z\")], md[, c(\"y\", \"w\")])",
+       cov(md[, c("x", "z")], md[, c("y", "w")]))
+report("6a cor(md[, c(\"x\", \"z\")], md[, c(\"y\", \"w\")])",
+       cor(md[, c("x", "z")], md[, c("y", "w")]))
+
+## 6b. A vector on either side. R treats it as a single unnamed column, so
+## the result is 1 x 2 one way and 2 x 1 the other.
+report("6b cor(md[, \"x\"], md[, c(\"y\", \"w\")])", cor(md[, "x"], md[, c("y", "w")]))
+report("6b cor(md[, c(\"y\", \"w\")], md[, \"x\"])", cor(md[, c("y", "w")], md[, "x"]))
+report("6b cov(md[, \"x\"], md[, c(\"y\", \"w\")])", cov(md[, "x"], md[, c("y", "w")]))
+
+## 6c. What R refuses, and what it only warns about. A row-count mismatch is
+## an error. A constant column is a warning, and its row of the result is NA.
+report_condition("6c cor(matrix(1:6, 3), matrix(1:4, 2)) row counts differ",
+                 cor(matrix(1:6, 3), matrix(1:4, 2)))
+report_condition("6c cor with a constant column in x",
+                 report("6c cor(cbind(a = c(1, 1, 1), b = 1:3), cbind(c = 1:3, d = 3:1))",
+                        cor(cbind(a = c(1, 1, 1), b = 1:3), cbind(c = 1:3, d = 3:1))))
+cat("6c the constant row holds NA, not NaN: ",
+    all(!is.nan(suppressWarnings(cor(cbind(a = c(1, 1, 1), b = 1:3), cbind(c = 1:3, d = 3:1))))),
+    "\n", sep = "")
+
+## 6d. Exact binary fractions, 5 x 2 against 5 x 3, so a port can pin the
+## bits. R computes the covariance in two passes with a refined mean.
+E1 <- matrix(c(0.5, -1.25, 2, 0.75, -0.5,
+               1.5, 0.25, -2, 3.25, 0.5), nrow = 5,
+             dimnames = list(NULL, c("e1", "e2")))
+E2 <- matrix(c(-0.25, 1, 0.5, -1.5, 2.25,
+               4, -0.75, 1.25, 0.5, -2,
+               0.125, 0.375, -0.625, 1.75, 0.25), nrow = 5,
+             dimnames = list(NULL, c("f1", "f2", "f3")))
+report("6d E1", E1)
+report("6d E2", E2)
+report("6d cov(E1, E2)", cov(E1, E2))
+report("6d cor(E1, E2)", cor(E1, E2))
+
+## 6e. scale() on a small exact matrix. Column c is constant, so the default
+## call divides by a standard deviation of zero and gives NaN.
+m5 <- matrix(c(1, 2, 3, 4, 5, 2, 4, 6, 8, 10, 1, 1, 1, 1, 1), 5,
+             dimnames = list(NULL, c("a", "b", "c")))
+report("6e m5", m5)
+
+report_scale <- function(label, ...) {
+  s <- scale(...)
+  report(label, s)
+  ctr <- attr(s, "scaled:center")
+  scl <- attr(s, "scaled:scale")
+  cat("scaled:center: ", if (is.null(ctr)) "absent" else fmtv(ctr), "\n", sep = "")
+  cat("scaled:center names: ",
+      if (is.null(ctr) || is.null(names(ctr))) "NULL" else paste(names(ctr), collapse = ", "),
+      "\n", sep = "")
+  cat("scaled:scale: ", if (is.null(scl)) "absent" else fmtv(scl), "\n", sep = "")
+  cat("scaled:scale names: ",
+      if (is.null(scl) || is.null(names(scl))) "NULL" else paste(names(scl), collapse = ", "),
+      "\n", sep = "")
+  nan_at <- which(is.nan(s))
+  cat("NaN at column-major indices: ",
+      if (length(nan_at) == 0) "none" else paste(nan_at, collapse = ", "), "\n", sep = "")
+  invisible(s)
+}
+
+## The defaults center by the mean and divide by the standard deviation.
+## R gives no warning for the constant column.
+report_condition("6e scale(m5) defaults, warning if any",
+                 report_scale("6e scale(m5) defaults", m5))
+
+## With center = FALSE R divides by the root mean square, sqrt(sum(x^2) /
+## (n - 1)), not by the standard deviation. Column c is then finite.
+report_scale("6e scale(m5, center = FALSE)", m5, center = FALSE)
+
+## With scale = FALSE R only centers, and reports no "scaled:scale".
+report_scale("6e scale(m5, scale = FALSE)", m5, scale = FALSE)
+
+## Explicit numeric vectors. R subtracts and divides by the values given and
+## reports them back unchanged.
+report_scale("6e scale(m5, center = c(1, 2, 3), scale = c(2, 2, 2))",
+             m5, center = c(1, 2, 3), scale = c(2, 2, 2))
+report_scale("6e scale(m5, center = TRUE, scale = c(1, 2, 4))",
+             m5, center = TRUE, scale = c(1, 2, 4))
+
+## 6f. scale() of the bundled data, both attributes in full and the first
+## three rows of the result.
+smd <- scale(md)
+cat("\n---- 6f scale(moderation_data) defaults ----\n")
+cat("dim: ", nrow(smd), " x ", ncol(smd), "\n", sep = "")
+cat("colnames: ", paste(colnames(smd), collapse = ", "), "\n", sep = "")
+cat("scaled:center: ", fmtv(attr(smd, "scaled:center")), "\n", sep = "")
+cat("scaled:center names: ", paste(names(attr(smd, "scaled:center")), collapse = ", "), "\n", sep = "")
+cat("scaled:scale: ", fmtv(attr(smd, "scaled:scale")), "\n", sep = "")
+cat("scaled:scale names: ", paste(names(attr(smd, "scaled:scale")), collapse = ", "), "\n", sep = "")
+cat("rows 1:3 column-major: ", fmtv(as.vector(smd[1:3, ])), "\n", sep = "")
+
+## 6g. A center or a scale vector of the wrong length.
+report_condition("6g scale(m5, center = c(1, 2))", scale(m5, center = c(1, 2)))
+report_condition("6g scale(m5, scale = c(1, 2))", scale(m5, scale = c(1, 2)))
+
+## ===========================================================================
+## Section 7 — chol() and chol2inv()
+## ===========================================================================
+##
+## chol() is LAPACK dpotrf. R returns the UPPER factor U, so A equals
+## t(U) %*% U. chol2inv() is dpotri, which inverts A from that factor and
+## costs less than a general LU inverse. chol() reads only the upper
+## triangle of its argument and never looks at the lower one.
+##
+## Consumed by (TypeScript port): src/core/linalg/chol.test.ts
+
+cat("\n==== Section 7: chol and chol2inv ====\n")
+
+report_chol <- function(label, A) {
+  U <- chol(A)
+  report(paste0(label, " — chol(A), the upper factor U"), U)
+  cat("max |t(U) %*% U - A|: ", fmt(max(abs(crossprod(U) - A))), "\n", sep = "")
+  Ainv <- chol2inv(U)
+  report(paste0(label, " — chol2inv(chol(A))"), Ainv)
+  cat("max |A %*% chol2inv(chol(A)) - I|: ",
+      fmt(max(abs(A %*% Ainv - diag(nrow(A))))), "\n", sep = "")
+  invisible(U)
+}
+
+## 7a. A small positive definite matrix. solve() prints beside chol2inv() so
+## a port can see how far the two inverses sit apart.
+S3 <- matrix(c(4, 2, 2, 2, 5, 3, 2, 3, 6), 3)
+report("7a S3", S3)
+report_chol("7a S3", S3)
+report("7a solve(S3), the LU inverse", solve(S3))
+cat("7a max |chol2inv(chol(S3)) - solve(S3)|: ",
+    fmt(max(abs(chol2inv(chol(S3)) - solve(S3)))), "\n", sep = "")
+
+## 7b. The correlation matrix of the bundled data. Its dimnames travel into
+## the factor.
+R4 <- cor(md)
+report("7b cor(moderation_data)", R4)
+report_chol("7b cor(moderation_data)", R4)
+
+## 7c. dimnames. chol() keeps both, and chol2inv() drops them.
+D2 <- matrix(c(4, 2, 2, 3), 2, dimnames = list(c("p", "q"), c("p", "q")))
+UD <- chol(D2)
+report("7c chol(D2) with dimnames", UD)
+report("7c chol2inv(chol(D2))", chol2inv(UD))
+
+## 7d. Only the upper triangle is read. The 99 in the lower slot never
+## reaches the factorization, so the factor equals the factor of the
+## symmetric matrix that holds 2 there.
+report("7d chol(matrix(c(4, 99, 2, 3), 2))", chol(matrix(c(4, 99, 2, 3), 2)))
+report("7d chol(matrix(c(4, 2, 2, 3), 2)) for comparison", chol(matrix(c(4, 2, 2, 3), 2)))
+cat("7d the two factors are identical: ",
+    identical(chol(matrix(c(4, 99, 2, 3), 2)), chol(matrix(c(4, 2, 2, 3), 2))), "\n", sep = "")
+
+## 7e. A 1 x 1.
+report("7e chol(matrix(9))", chol(matrix(9)))
+report("7e chol2inv(chol(matrix(9)))", chol2inv(chol(matrix(9))))
+
+## 7f. What chol() and chol2inv() refuse.
+report_condition("7f chol(matrix(c(1, 2, 2, 1), 2)) not positive definite",
+                 chol(matrix(c(1, 2, 2, 1), 2)))
+report_condition("7f chol(matrix(1:6, 3)) non-square", chol(matrix(1:6, 3)))
+report_condition("7f chol(matrix(c(NA, 1, 1, 2), 2)) an NA", chol(matrix(c(NA, 1, 1, 2), 2)))
+
+## chol2inv() does not refuse a tall matrix. Its `size` argument defaults to
+## the column count, so it reads the leading 2 x 2 of the upper triangle and
+## inverts that. Only a wide matrix, where size would exceed the row count,
+## is an error. The port refuses both shapes.
+report_condition("7f chol2inv(matrix(1:6, 3)) is 3 x 2 and R computes it",
+                 report("7f chol2inv(matrix(1:6, 3))", chol2inv(matrix(1:6, 3))))
+report_condition("7f chol2inv(matrix(1:6, 2)) is 2 x 3", chol2inv(matrix(1:6, 2)))
+report_condition("7f chol2inv(matrix(c(NA, 1, 1, 2), 2)) an NA",
+                 report("7f chol2inv with an NA", chol2inv(matrix(c(NA, 1, 1, 2), 2))))
+
+## ===========================================================================
+## Section 8 — predict.lm() over new data
+## ===========================================================================
+##
+## predict.lm() rebuilds the design over the new frame with the terms of the
+## fit, then multiplies it by the coefficients. A row that holds an NA gives
+## NA. A column the terms need and the frame lacks is an error. A fit whose
+## design was rank deficient still predicts, and R warns about it.
+##
+## Consumed by (TypeScript port): src/core/linalg/lm.test.ts
+
+cat("\n==== Section 8: predict.lm ====\n")
+
+nd <- data.frame(x = c(-1, 0, 0.5, 2, 1.25),
+                 z = c(0.5, -0.25, 1, -1, 0),
+                 w = c(2, 1, -0.5, 0.75, -1.5))
+cat("\n---- 8 newdata nd ----\n")
+cat("x: ", fmtv(nd$x), "\n", sep = "")
+cat("z: ", fmtv(nd$z), "\n", sep = "")
+cat("w: ", fmtv(nd$w), "\n", sep = "")
+
+## 8a. The moderation model with a control, the fit of section 4a.
+f4a <- lm(y ~ x * z + w, moderation_data)
+report("8a coef(lm(y ~ x * z + w))", coef(f4a))
+report("8a predict(lm(y ~ x * z + w), nd)", predict(f4a, nd))
+
+## 8b. The no-intercept fit of section 4b.
+f4g <- lm(y ~ x + z - 1, moderation_data)
+report("8b coef(lm(y ~ x + z - 1))", coef(f4g))
+report("8b predict(lm(y ~ x + z - 1), nd)", predict(f4g, nd))
+
+## 8c. The moderation demo's own model, the fit of section 4h.
+f4h <- lm(y ~ x * z, moderation_data)
+report("8c coef(lm(y ~ x * z))", coef(f4h))
+report("8c predict(lm(y ~ x * z), nd)", predict(f4h, nd))
+
+## 8d. An NA in row 3. R returns NA for that row and keeps the row name.
+nd_na <- nd
+nd_na$x[3] <- NA
+report_condition("8d predict with an NA in row 3 of x, warning if any",
+                 report("8d predict(f4a, nd_na)", predict(f4a, nd_na)))
+
+## 8e. A frame that lacks a column the terms need.
+report_condition("8e predict(f4a, nd[, c(\"x\", \"z\")]) drops w",
+                 predict(f4a, nd[, c("x", "z")]))
+
+## 8f. The aliased fit of section 4c, whose x2 column is 2 * x. Its second
+## slope is NA, and that coefficient adds nothing to a prediction.
+##
+## R 4.3 and later take `rankdeficient = "warnif"` by default. R then warns
+## only when a row of the new design leaves the column space of the fitted
+## design. A new frame that keeps x2 = 2 * x stays inside it, so R predicts
+## in silence. A new frame that breaks the relation is doubtful, and R warns
+## and marks the rows in an attribute. Both frames give the same numbers,
+## because the aliased column never enters the product.
+aliased <- data.frame(y = moderation_data$y, x = moderation_data$x, x2 = 2 * moderation_data$x)
+f4c <- lm(y ~ x + x2, aliased)
+report("8f coef(lm(y ~ x + x2)) aliased", coef(f4c))
+nd_alias <- data.frame(x = nd$x, x2 = 2 * nd$x)
+report_condition("8f predict on the aliased fit, x2 = 2 * x, no warning",
+                 report("8f predict(f4c, nd_alias)", predict(f4c, nd_alias)))
+nd_doubt <- data.frame(x = nd$x, x2 = c(-2, 0, 1, 3, 2.5))
+report_condition("8f predict on the aliased fit, x2 free of x, R warns",
+                 report("8f predict(f4c, nd_doubt)", predict(f4c, nd_doubt)))
+cat("8f non-estim attribute of that prediction: ",
+    paste(attr(suppressWarnings(predict(f4c, nd_doubt)), "non-estim"), collapse = ", "), "\n", sep = "")
+
+## 8g. predict() with no newdata does NOT return fitted() bit for bit. R
+## builds the design again and multiplies it by the coefficients, while
+## fitted() holds what dqrsl returned during the fit. The two agree to about
+## 1e-14 and differ in nearly every row.
+report("8g predict(f4h)[1:5]", head(predict(f4h), 5))
+report("8g fitted(f4h)[1:5]", head(fitted(f4h), 5))
+cat("8g rows where predict(f4h) != fitted(f4h): ",
+    sum(predict(f4h) != fitted(f4h)), " of ", nrow(moderation_data), "\n", sep = "")
+cat("8g max |predict(f4h) - fitted(f4h)|: ",
+    fmt(max(abs(predict(f4h) - fitted(f4h)))), "\n", sep = "")
