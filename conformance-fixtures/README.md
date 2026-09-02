@@ -37,10 +37,18 @@ a dataset from `data/`, so the working directory must be the package root.
 | `linalg.R` | Base-R linear algebra a port must write itself: `matrix()`, `t()`, `%*%`, `crossprod()`, `cbind()`/`rbind()`, `diag()`, vector arithmetic, `qr()`, `solve()`, `model.matrix()`/`lm()`, `cov()`/`cor()`, `eigen()`, `prcomp()`, `scale()`, `chol()`/`chol2inv()`, `predict.lm()` (contributed by the TypeScript port) |
 | `distributions.R` | Base-R distributions a port must write itself: `pchisq()` central and non-central, `qchisq()`, `pnorm()`, `qnorm()`, and `qnorm()` on the subnormal tail below the reach of AS 241 (contributed by the TypeScript port) |
 | `optim.R` | `optim(method = "BFGS")`: Rosenbrock, a convex quadratic, a logistic maximum-likelihood fit, a stationary start, an unknown method (contributed by the TypeScript port) |
+| `arith.R` | Base-R summary arithmetic on a double vector: the **three** different means base R computes — `mean()`, the mean inside `cov()`/`sd()`, and `colMeans()` — plus `sd()` and `var()` and the degenerate cases (contributed by the TypeScript port) |
 
 `ols.R` is not a function family. It covers the solver that the regression
 line, every IRLS step of the logit fit and the moderation surface all run on,
 so its edge cases sit in one place instead of one family's fixtures.
+
+`arith.R` is not a function family either. It exists because `mean()` is not
+`sum(x)/n` — R corrects it in a second pass — and because the correction is
+*not* uniform across base R: `cov.c` makes the same correction and
+`colMeans()` does not. A port that unifies those three is wrong in at least
+one place, and the script prints all three side by side on the same data so
+the disagreement is visible rather than assumed.
 
 Two sections skip themselves with a message when an optional package is
 missing: the slider check in `matrix-inverse.R` needs `shiny`, and the
