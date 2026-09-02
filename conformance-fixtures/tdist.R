@@ -210,3 +210,88 @@ for (ps_ in param_sets) {
 }
 
 dev.off()
+
+## ---------------------------------------------------------------------------
+## Section 4. `lower.tail = FALSE` on `pt()` and `qt()`.
+##
+## Added for the TypeScript port, which exported `pt(x, df, ncp)` with no tail
+## argument and so left a consumer writing `1 - pt(t, df)`. That subtraction
+## is not a rounding nuisance: past about t = 9 at df = 249 it returns exactly
+## zero, where R returns a small positive number. R avoids it by computing the
+## upper tail directly out of the incomplete beta, which is the same identity
+## the lower tail comes from — `pt.c` evaluates the mass above |x| either way
+## and complements only the tail that is near one.
+##
+## The `1 - pt()` column is printed beside R's own answer so a port can see
+## where the two part company, and how far apart they are when they do.
+## ---------------------------------------------------------------------------
+
+cat("\n\n==== Section 4: lower.tail = FALSE on pt() and qt() ====\n")
+
+cat("\n---- 4a. Central pt(), upper tail against the subtraction ----\n")
+cat("df = 249, the shape a bootstrap t-statistic over 250 observations takes.\n\n")
+tail_df <- 249
+for (t in c(0.5, 1, 2, 4, 6, 8, 9, 10, 12, 20, 40)) {
+  upper <- pt(t, tail_df, lower.tail = FALSE)
+  subtracted <- 1 - pt(t, tail_df)
+  relative <- if (upper == 0) 0 else abs(subtracted - upper) / upper
+  cat("t = ", format(t, width = 4), "\n", sep = "")
+  cat("  pt(t, df, lower.tail = FALSE): ", fmt(upper), "\n", sep = "")
+  cat("  1 - pt(t, df) [NOT R's upper tail]: ", fmt(subtracted), "\n", sep = "")
+  cat("  relative error of the subtraction: ", fmt(relative), "\n", sep = "")
+}
+
+cat("\n---- 4b. Central pt(), the negative side and the ends ----\n")
+cat("Below zero the upper tail is the near-one side, so it is the *lower*\n")
+cat("tail that a port must not build by subtraction. R's `pt.c` flips which\n")
+cat("tail it complements at x <= 0 rather than complementing a small number.\n\n")
+for (t in c(-20, -8, -2, -0.5, 0)) {
+  cat("t = ", format(t, width = 5),
+      "  lower: ", fmt(pt(t, tail_df)),
+      "  upper: ", fmt(pt(t, tail_df, lower.tail = FALSE)), "\n", sep = "")
+}
+cat("df = 1 (Cauchy), t = 1000, upper: ",
+    fmt(pt(1000, 1, lower.tail = FALSE)), "\n", sep = "")
+cat("df = 3, t = 1e150, upper: ",
+    fmt(pt(1e150, 3, lower.tail = FALSE)), "\n", sep = "")
+cat("df = 5e5 (the normal-approximation branch), t = 6, upper: ",
+    fmt(pt(6, 5e5, lower.tail = FALSE)), "\n", sep = "")
+cat("Inf upper: ", fmt(pt(Inf, tail_df, lower.tail = FALSE)),
+    "   -Inf upper: ", fmt(pt(-Inf, tail_df, lower.tail = FALSE)), "\n", sep = "")
+
+cat("\n---- 4c. Central qt(), upper tail ----\n")
+cat("R's `qt.c` reaches the same magnitude from either tail and differs only\n")
+cat("in sign, so a port may take the symmetry — but it is pinned, not assumed.\n\n")
+for (p in c(0.5, 0.25, 0.05, 0.025, 0.001, 1e-8, 1e-20)) {
+  upper <- qt(p, tail_df, lower.tail = FALSE)
+  cat("p = ", format(p, width = 6, scientific = TRUE), "\n", sep = "")
+  cat("  qt(p, df, lower.tail = FALSE): ", fmt(upper), "\n", sep = "")
+  cat("  -qt(p, df) [the symmetry]: ", fmt(-qt(p, tail_df)), "\n", sep = "")
+  cat("  identical: ", identical(upper, -qt(p, tail_df)), "\n", sep = "")
+  cat("  qt(1 - p, df) [NOT R's upper quantile]: ",
+      fmt(qt(1 - p, tail_df)), "\n", sep = "")
+}
+cat("qt(0, df, lower.tail = FALSE): ", fmt(qt(0, tail_df, lower.tail = FALSE)),
+    "\n", sep = "")
+cat("qt(1, df, lower.tail = FALSE): ", fmt(qt(1, tail_df, lower.tail = FALSE)),
+    "\n", sep = "")
+
+cat("\n---- 4d. Non-central pt() and qt(), upper tail ----\n")
+cat("R's `pnt.c` computes the lower tail and complements it with its own\n")
+cat("`0.5 - p + 0.5` idiom, so the non-central upper tail carries the\n")
+cat("subtraction in R too. A port matching R here must complement, not\n")
+cat("compute the other tail directly, and gains no precision by trying.\n\n")
+for (combo in list(c(10, 2), c(25, 4), c(249, 3), c(8, -2.5))) {
+  df <- combo[1]
+  ncp <- combo[2]
+  cat("df = ", df, ", ncp = ", ncp, "\n", sep = "")
+  for (t in c(-1, 0, 2, 5, 12)) {
+    cat("  t = ", format(t, width = 3),
+        "  lower: ", fmt(pt(t, df, ncp)),
+        "  upper: ", fmt(pt(t, df, ncp, lower.tail = FALSE)), "\n", sep = "")
+  }
+  for (p in c(0.025, 0.5, 0.975)) {
+    cat("  qt(", p, ", df, ncp, lower.tail = FALSE): ",
+        fmt(qt(p, df, ncp, lower.tail = FALSE)), "\n", sep = "")
+  }
+}
