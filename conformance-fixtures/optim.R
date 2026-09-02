@@ -215,3 +215,116 @@ cat("\n==== Section 5: unknown method ====\n")
 
 report_condition("5a optim(c(1, 1), fr, method = \"Nope\")",
                  optim(c(1, 1), fr, method = "Nope"))
+
+## ===========================================================================
+## Section 6 — R's own path, not only R's optimum
+## ===========================================================================
+##
+## Sections 1 to 5 pin where R lands. A port that reaches the same optimum by
+## another route matches them and reports its own counts, which is what the
+## header above describes. This section pins the route: R's BFGS is `vmmin`
+## in src/main/optim.c, R Core's arrangement of Nash (1990) algorithm 21, and
+## a port that follows it reproduces `counts` exactly rather than reporting
+## its own.
+##
+## `counts` is the strongest single check available here. `fncount` and
+## `grcount` are integers, so they cannot agree by luck the way a converged
+## `par` can: they count the line-search step reductions (a factor of 0.2
+## each), the acceptance test at acctol = 1e-4, the inverse-Hessian resets on
+## an uphill direction and on a curvature condition D1 <= 0, and the periodic
+## restart when grcount - ilast exceeds 2n. A port that gets any of those
+## wrong misses the count even when it lands on the same optimum.
+##
+## The cases below exercise the parts of `vmmin` that sections 1 to 5 do not.
+
+cat("\n==== Section 6: the vmmin path ====\n")
+
+## 6a. Five parameters, so the periodic restart at `2 * n` is reachable and
+## the inverse Hessian is more than a 2 x 2. An extended Rosenbrock: the sum
+## of four coupled banana valleys, minimum 0 at rep(1, 5).
+
+fr5 <- function(x) {
+  sum(100 * (x[-1] - x[-5]^2)^2 + (1 - x[-5])^2)
+}
+
+gr5 <- function(x) {
+  n <- length(x)
+  g <- numeric(n)
+  lo <- x[-n]
+  hi <- x[-1]
+  g[-n] <- -400 * lo * (hi - lo^2) - 2 * (1 - lo)
+  g[-1] <- g[-1] + 200 * (hi - lo^2)
+  g
+}
+
+start5 <- c(-1.2, 1, -1.2, 1, -1.2)
+cat("start: ", fmtv(start5), "\n", sep = "")
+cat("fr5(start): ", fmt(fr5(start5)), "\n", sep = "")
+cat("gr5(start): ", fmtv(gr5(start5)), "\n", sep = "")
+
+report_optim("6a optim(start5, fr5, gr5, method = \"BFGS\")",
+             optim(start5, fr5, gr5, method = "BFGS"))
+
+## 6b. The same, with maxit raised past R's default of 100, so the run ends on
+## the reltol rule rather than on the cap.
+report_optim("6b optim(start5, fr5, gr5, method = \"BFGS\", maxit = 500)",
+             optim(start5, fr5, gr5, method = "BFGS", control = list(maxit = 500)))
+
+## 6c. The same problem with no analytic gradient, so R's finite-difference
+## path carries the run: central differences at ndeps, one gradient call
+## costing 2n function evaluations that R does *not* add to `fncount`.
+report_optim("6c optim(start5, fr5, method = \"BFGS\", maxit = 500) no gr",
+             optim(start5, fr5, method = "BFGS", control = list(maxit = 500)))
+
+## 6d. A non-default ndeps, which moves the finite-difference gradient and so
+## the whole path. One step for all parameters.
+report_optim("6d optim(start5, fr5, method = \"BFGS\", maxit = 500, ndeps = 1e-5) no gr",
+             optim(start5, fr5, method = "BFGS",
+                   control = list(maxit = 500, ndeps = rep(1e-5, 5))))
+
+## 6e. A per-parameter ndeps vector, which R takes as given.
+report_optim("6e optim(c(5, -3), fq, method = \"BFGS\", ndeps = c(1e-2, 1e-6)) no gr",
+             optim(c(5, -3), fq, method = "BFGS",
+                   control = list(ndeps = c(1e-2, 1e-6))))
+
+## 6f. A start far from the minimum on a steeply scaled quadratic. The first
+## direction overshoots badly, so the line search reduces the step several
+## times before the acceptance test passes, and `fncount` runs well ahead of
+## `grcount`.
+
+fsteep <- function(p) 1e4 * (p[1] - 3)^2 + 1e-2 * (p[2] + 7)^2
+gsteep <- function(p) c(2e4 * (p[1] - 3), 2e-2 * (p[2] + 7))
+
+cat("fsteep(c(-40, 900)): ", fmt(fsteep(c(-40, 900))), "\n", sep = "")
+report_optim("6f optim(c(-40, 900), fsteep, gsteep, method = \"BFGS\")",
+             optim(c(-40, 900), fsteep, gsteep, method = "BFGS"))
+
+## 6g. A one-parameter problem. n = 1 makes the periodic restart fire every
+## other gradient call, and it is the smallest case where the Hessian update
+## can be checked by hand.
+report_optim("6g optim(2, function(p) (p - 1)^4, function(p) 4 * (p - 1)^3, method = \"BFGS\")",
+             optim(2, function(p) (p - 1)^4, function(p) 4 * (p - 1)^3,
+                   method = "BFGS"))
+
+## 6h. An objective that is flat in one direction. The BFGS update's D1 is
+## zero or negative there, so R resets the inverse Hessian to the identity
+## (`ilast <- gradcount`) rather than updating it.
+freflat <- function(p) (p[1] - 2)^2
+grflat <- function(p) c(2 * (p[1] - 2), 0)
+report_optim("6h optim(c(0, 5), freflat, grflat, method = \"BFGS\")",
+             optim(c(0, 5), freflat, grflat, method = "BFGS"))
+
+## 6i. maxit = 0. R evaluates the objective once and returns the start.
+report_optim("6i optim(c(5, -3), fq, gq, method = \"BFGS\", maxit = 0)",
+             optim(c(5, -3), fq, gq, method = "BFGS", control = list(maxit = 0)))
+
+## 6j. R's four BFGS control defaults, printed so a port does not have to
+## guess at them. `reltol` is sqrt(.Machine$double.eps).
+cat("\n---- 6j R's BFGS control defaults ----\n")
+cat("maxit: ", 100L, "\n", sep = "")
+cat("reltol: ", fmt(sqrt(.Machine$double.eps)), "\n", sep = "")
+cat("abstol: ", fmt(-Inf), "\n", sep = "")
+cat("ndeps: ", fmt(1e-3), "\n", sep = "")
+cat("stepredn (vmmin, not exposed): ", fmt(0.2), "\n", sep = "")
+cat("acctol (vmmin, not exposed): ", fmt(0.0001), "\n", sep = "")
+cat("reltest (vmmin, not exposed): ", fmt(10), "\n", sep = "")
